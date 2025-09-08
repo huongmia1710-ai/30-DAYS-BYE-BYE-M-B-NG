@@ -7,11 +7,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root{
-    --p1:#ff8fab; --p2:#ffb3c1; --p3:#ffd6a5;
+    --p1:#ff8fab; --p2:#ffb3c1; --p3:#ffd6a5; --p4:#9adbb3; --p5:#a5b4fc; --p6:#fecdd3;
     --bg:#fff7fb; --bg-grad:#fff0f6;
     --text:#2b2b2b; --muted:#6b7280;
     --card:#ffffff; --border:#f4dbe3;
-    --col-huong:#ff8fab; --col-thuy:#a5b4fc; --col-lien:#9adbb3;
   }
   body{margin:0;font-family:Inter,system-ui;background:linear-gradient(180deg,var(--bg-grad) 0%, #fff 40%);}
   .wrap{max-width:1200px;margin:28px auto;padding:0 18px}
@@ -20,12 +19,21 @@
         box-shadow:0 12px 28px rgba(255,168,186,.20);}
   .hero h1{margin:0;font-size:30px}
   .subtitle{margin-top:6px;color:var(--muted);font-size:16px}
+
+  .panel{margin-top:18px;border:1px solid var(--border);border-radius:12px;background:#fff;padding:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff}
+  .chip .name{font-weight:600}
+  .chip button{border:none;background:transparent;cursor:pointer;font-size:14px}
+  .chip .colordot{width:10px;height:10px;border-radius:999px;display:inline-block}
+
   .toast{position:fixed;right:16px;bottom:16px;background:#fff;
         border:1px solid var(--border);padding:12px 14px;border-radius:12px;
-        box-shadow:0 12px 30px rgba(0,0,0,.12);display:none;font-weight:600}
+        box-shadow:0 12px 30px rgba(0,0,0,.12);display:none;font-weight:600;z-index:1000}
   .toast.show{display:block;animation:fade .18s ease-out}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  canvas#confetti{position:fixed;inset:0;pointer-events:none}
+  canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
   table{border-collapse:collapse;margin-top:16px;width:100%}
   th,td{padding:8px 12px;border:1px solid #eee;text-align:center;position:relative}
   td.daycell.done{background:#ffeef3}
@@ -33,10 +41,13 @@
            background:#333;color:#fff;padding:6px 8px;border-radius:6px;
            white-space:pre-line;font-size:12px;display:none;z-index:10}
   td:hover .tooltip{display:block}
+
   #journalModal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;
                 align-items:center;justify-content:center;z-index:100}
-  #journalForm{background:#fff;padding:20px;border-radius:12px;max-width:400px;width:90%}
+  #journalForm{background:#fff;padding:20px;border-radius:12px;max-width:420px;width:92%}
   #journalForm input,#journalForm textarea{width:100%;margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px}
+  #journalForm .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+  .small{font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -48,45 +59,55 @@
     <div class="subtitle">Đừng chờ động lực mới bắt đầu. Hãy bắt đầu để tạo ra động lực. 🌸</div>
   </div>
 
-  <!-- Chọn ngày bắt đầu -->
-  <div style="margin-top:20px">
-    <label>Thành viên:</label>
-    <select id="whoSelect">
-      <option value="Huong">Hương</option>
-      <option value="Thuy">Thùy</option>
-      <option value="Lien">Liên</option>
-    </select>
-    <label>Ngày bắt đầu:</label>
-    <input type="date" id="startDateInput"/>
-    <button onclick="saveStart()">Lưu ngày bắt đầu</button>
+  <!-- 👥 Quản lý thành viên -->
+  <div class="panel">
+    <div class="row" id="memberChips"></div>
+    <div class="row" style="margin-top:10px">
+      <input id="newMemberName" placeholder="Tên thành viên mới" />
+      <button id="addMemberBtn">➕ Thêm thành viên</button>
+      <span class="small">Gợi ý: thêm người mới sẽ tự cập nhật chọn ngày, bảng tick, chart, journal.</span>
+    </div>
+  </div>
+
+  <!-- 📅 Chọn ngày bắt đầu -->
+  <div class="panel">
+    <div class="row">
+      <label>Thành viên:</label>
+      <select id="whoSelect"></select>
+      <label>Ngày bắt đầu:</label>
+      <input type="date" id="startDateInput"/>
+      <button id="saveStartBtn">Lưu ngày bắt đầu</button>
+    </div>
     <div id="startSummary" style="margin-top:8px"></div>
   </div>
 
-  <!-- Leaderboard -->
-  <div style="margin-top:20px" id="leaderboard"></div>
+  <!-- 🏆 Leaderboard -->
+  <div class="panel" id="leaderboard"></div>
 
-  <!-- Biểu đồ -->
-  <div style="margin:20px 0">
+  <!-- 📊 Biểu đồ -->
+  <div class="panel">
     <canvas id="barChart" height="180"></canvas>
   </div>
 
-  <!-- Bảng 30 ngày -->
-  <div style="margin-top:20px">
+  <!-- 📅 Bảng 30 ngày -->
+  <div class="panel">
     <table id="daysTable"></table>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
-<!-- Modal nhập nhật ký -->
+<!-- 📝 Modal nhật ký -->
 <div id="journalModal">
   <form id="journalForm" onsubmit="saveJournal(event)">
     <h3>Nhật ký ngày <span id="journalDay"></span> - <span id="journalWho"></span></h3>
     <input type="number" id="weightInput" placeholder="Cân nặng (kg)" step="0.1"/>
     <input type="number" id="waistInput" placeholder="Vòng eo (cm)" step="0.1"/>
     <textarea id="noteInput" rows="3" placeholder="Tình trạng sức khoẻ / ghi chú"></textarea>
-    <button type="submit">Lưu</button>
-    <button type="button" onclick="closeJournal()">Đóng</button>
+    <div class="actions">
+      <button type="button" onclick="closeJournal()">Đóng</button>
+      <button type="submit">Lưu</button>
+    </div>
   </form>
 </div>
 
@@ -107,48 +128,96 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const ROOM_ID = "main"; 
+const ROOM_ID = "main";
 const docRef = () => db.collection("rooms").doc(ROOM_ID);
 
 /* ================== STATE ================== */
-const DAYS=30;
-const members=[
-  {id:"Huong",name:"Hương",color:"var(--col-huong)"},
-  {id:"Thuy",name:"Thùy",color:"var(--col-thuy)"},
-  {id:"Lien",name:"Liên",color:"var(--col-lien)"}
-];
+const DAYS = 30;
+const COLOR_POOL = ['#ff8fab','#a5b4fc','#9adbb3','#ffd6a5','#fecdd3','#b7e4c7','#c7d2fe','#fbcfe8'];
+function defaultMembers(){
+  return [
+    {id:"Huong",name:"Hương",color:"#ff8fab"},
+    {id:"Thuy", name:"Thùy", color:"#a5b4fc"},
+    {id:"Lien", name:"Liên",  color:"#9adbb3"},
+  ];
+}
 function defaultState(){
   return {
-    days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
-    startDate:{Huong:null,Thuy:null,Lien:null},
-    journal:{}
+    members: defaultMembers(),                   // <<— giờ lưu động
+    days: Array.from({length:DAYS},()=>({})),    // mỗi ngày là object id:true/false
+    startDate: {},                               // id -> YYYY-MM-DD
+    journal: {},                                 // `${id}_${day}` -> {weight,waist,note}
+    milestone: {}                                // id -> {7:true,15:true,30:true}
   };
 }
-let state=defaultState();
+let state = defaultState();
 
-/* ================== TOOLS ================== */
-const toastEl=document.getElementById('toast');
+/* ========== INIT: nếu days trống, khởi đối tượng theo members ========= */
+function ensureDayKeys(){
+  for(let d=0; d<DAYS; d++){
+    state.members.forEach(m=>{
+      if(typeof state.days[d][m.id] === 'undefined') state.days[d][m.id] = false;
+    });
+  }
+}
+
+/* ================== HELPERS ================== */
+const toastEl = document.getElementById('toast');
 function toast(msg,ms=2000){toastEl.textContent=msg;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),ms);}
-function playDing(){try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(0.0001, ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.18);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+0.2);}catch{}}
-function burst(x,y,emoji="🌸"){for(let i=0;i<25;i++){particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,size:18+Math.random()*10});}}
+
+function playDing(){try{
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type="sine"; o.frequency.value=880;
+  g.gain.setValueAtTime(0.0001, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.18);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+0.2);
+}catch{}}
+
 const confettiCanvas=document.getElementById('confetti');const cctx=confettiCanvas.getContext('2d');
-function sizeCanvas(){confettiCanvas.width=innerWidth;confettiCanvas.height=innerHeight;}sizeCanvas();addEventListener('resize',sizeCanvas);
-let particles=[];(function tick(){cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);particles.forEach(p=>{p.life--;p.x+=p.vx;p.vy+=0.18;p.y+=p.vy;p.rot+=p.spin;cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);cctx.font=p.size+"px serif";cctx.fillText(p.emoji,0,0);cctx.restore();});particles=particles.filter(p=>p.life>0);requestAnimationFrame(tick);})();
+function sizeCanvas(){confettiCanvas.width=innerWidth;confettiCanvas.height=innerHeight;} sizeCanvas(); addEventListener('resize',sizeCanvas);
+let particles=[];
+function burst(x,y,emoji="🌸"){for(let i=0;i<25;i++){particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,size:18+Math.random()*10});}}
+(function tick(){cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  particles.forEach(p=>{p.life--;p.x+=p.vx;p.vy+=0.18;p.y+=p.vy;p.rot+=p.spin;
+    cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);
+    cctx.font=p.size+"px serif";cctx.fillText(p.emoji,0,0);cctx.restore();});
+  particles=particles.filter(p=>p.life>0); requestAnimationFrame(tick);
+})();
+
 const MOTIVATION=["Cố lên!!! 💪","Tuyệt vời, bạn làm được rồi! 🌟","Giữ vững phong độ nhé! 🔥","Mỗi ngày một bước nhỏ, bạn đang tiến bộ! 🚀","Bạn mạnh mẽ hơn bạn nghĩ! 💖"];
 function randomMsg(){return MOTIVATION[Math.floor(Math.random()*MOTIVATION.length)];}
+function slugify(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'').replace(/^\d+/,'').trim() || ('p'+Math.random().toString(36).slice(2,6));}
 
 /* ================== FIRESTORE ================== */
 function save(){docRef().set(state,{merge:true});}
-function subscribeRealtime(){docRef().onSnapshot(snap=>{if(snap.exists){state=Object.assign(defaultState(),snap.data());render();}else{docRef().set(state);}});}
+function subscribeRealtime(){
+  docRef().onSnapshot(snap=>{
+    if(snap.exists){
+      const cloud = snap.data();
+      // hợp nhất schema để tương thích bản cũ
+      state = Object.assign(defaultState(), cloud);
+      ensureDayKeys();
+      renderAll();
+    }else{
+      ensureDayKeys(); docRef().set(state);
+    }
+  }, err=>{
+    console.error('Firestore subscribe error:', err);
+    ensureDayKeys(); renderAll();
+  });
+}
 
 /* ================== JOURNAL ================== */
 let currentDay=null,currentWho=null;
 function openJournal(day,id){
   currentDay=day; currentWho=id;
   document.getElementById('journalDay').textContent=day+1;
-  document.getElementById('journalWho').textContent=members.find(m=>m.id==id).name;
-  const key=`${id}_${day}`;
-  const j=state.journal[key]||{};
+  const m = state.members.find(x=>x.id===id);
+  document.getElementById('journalWho').textContent = m? m.name : id;
+  const key=`${id}_${day}`, j=state.journal[key]||{};
   document.getElementById('weightInput').value=j.weight||"";
   document.getElementById('waistInput').value=j.waist||"";
   document.getElementById('noteInput').value=j.note||"";
@@ -163,101 +232,109 @@ function saveJournal(e){
     waist:document.getElementById('waistInput').value,
     note:document.getElementById('noteInput').value
   };
-  save();closeJournal();render();toast("Đã lưu nhật ký 📒");
+  save(); closeJournal(); renderTable(); toast("Đã lưu nhật ký 📒");
 }
 
-/* ================== APP LOGIC ================== */
+/* ================== LOGIC: START, STREAK, MILESTONE, TOGGLE ================== */
 function saveStart(){
-  const who=document.getElementById('whoSelect').value;
-  const date=document.getElementById('startDateInput').value;
-  if(date){ state.startDate[who]=date; save(); render(); }
+  const who = document.getElementById('whoSelect').value;
+  const date = document.getElementById('startDateInput').value;
+  if(!who || !date) return toast("Chọn thành viên và ngày bắt đầu!");
+  state.startDate[who]=date; save(); renderStartSummary(); toast("Đã lưu ngày bắt đầu ✅");
 }
-
-function getStreak(id){
-  let streak=0,maxStreak=0;
-  for(let d=0;d<DAYS;d++){
-    if(state.days[d][id]){streak++; if(streak>maxStreak)maxStreak=streak;}
-    else{streak=0;}
+function currentStreak(id){
+  // chuỗi liên tiếp hiện tại (đếm từ ngày cuối bảng lùi về)
+  let s=0;
+  for(let d=DAYS-1; d>=0; d--){
+    if(state.days[d][id]) s++;
+    else break;
   }
-  return maxStreak;
+  return s;
 }
-
+function totalOf(id){return state.days.reduce((a,d)=>a+(d[id]?1:0),0);}
+function checkMilestones(id){
+  const t = totalOf(id);
+  state.milestone[id] = state.milestone[id] || {};
+  [7,15,30].forEach(m=>{
+    if(t===m && !state.milestone[id][m]){
+      state.milestone[id][m]=true; save();
+      toast(`🎉 ${state.members.find(x=>x.id===id)?.name||id} đạt mốc ${m} ngày!`, 3500);
+      burst(innerWidth/2, innerHeight/2, "✨");
+    }
+  });
+}
 function doToggle(day,id){
-  // Không tick trước ngày bắt đầu
-  const start=state.startDate[id];
+  // Chặn tick tương lai nếu có ngày bắt đầu
+  const start = state.startDate[id];
   if(start){
-    const startIdx=Math.floor((new Date()-new Date(start))/(1000*60*60*24));
-    if(day>startIdx){ toast("Chưa tới ngày này!"); return; }
+    const startIdx = Math.floor((Date.now()- new Date(start).getTime())/(1000*60*60*24));
+    if(day > startIdx) return toast("Chưa tới ngày này!");
   }
-  state.days[day][id]=!state.days[day][id];
-  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();
-  const total=state.days.reduce((a,d)=>a+(d[id]?1:0),0);
-  if([7,15,30].includes(total)){ toast(`🎉 ${members.find(m=>m.id==id).name} đạt mốc ${total} ngày!`); burst(innerWidth/2, innerHeight/2,"🎉"); }
-  else{ toast(randomMsg()); }
-  render();
+  state.days[day][id] = !state.days[day][id];
+  save(); burst(innerWidth/2, innerHeight/3,"🌸"); playDing();
+  const t = totalOf(id);
+  if([7,15,30].includes(t)) { toast(`🎉 Mốc ${t} ngày!`); burst(innerWidth/2, innerHeight/2,"🎉"); }
+  else toast(randomMsg());
+  checkMilestones(id);
+  renderLeaderboard(); renderChart(); renderTable();  // cập nhật nhanh
 }
 
-function buildLeaderboard(){
-  let html="<h2>🏆 Leaderboard</h2>";
-  members.forEach(m=>{
-    const total=state.days.reduce((a,d)=>a+(d[m.id]?1:0),0);
-    const streak=getStreak(m.id);
-    html+=`<div><b style="color:${m.color}">${m.name}</b>: ${total}/${DAYS} ngày • 🔥 ${streak} streak</div>`;
+/* ================== MEMBER MGMT (ADD / EDIT) ================== */
+function renderMemberChips(){
+  const box = document.getElementById('memberChips');
+  box.innerHTML = "";
+  state.members.forEach(m=>{
+    const chip = document.createElement('div');
+    chip.className='chip';
+    chip.innerHTML = `
+      <span class="colordot" style="background:${m.color}"></span>
+      <span class="name">${m.name}</span>
+      <button title="Đổi tên" aria-label="edit" onclick="editMember('${m.id}')">✎</button>
+    `;
+    box.appendChild(chip);
   });
-  document.getElementById('leaderboard').innerHTML=html;
+}
+function editMember(id){
+  const mem = state.members.find(x=>x.id===id);
+  if(!mem) return;
+  const newName = prompt("Nhập tên mới cho thành viên:", mem.name);
+  if(!newName) return;
+  mem.name = newName.trim();
+  save(); renderMemberChips(); renderStartControls(); renderLeaderboard(); renderChart(); renderTable();
+  toast("Đã đổi tên ✅");
+}
+function addMember(){
+  const input = document.getElementById('newMemberName');
+  const name = (input.value||"").trim();
+  if(!name) return toast("Nhập tên thành viên!");
+  let baseId = slugify(name);
+  // đảm bảo id unique
+  let id = baseId, i=1;
+  while(state.members.some(m=>m.id===id)) { id = baseId + (++i); }
+  // chọn màu
+  const color = COLOR_POOL[state.members.length % COLOR_POOL.length];
+
+  // thêm vào danh sách
+  state.members.push({id, name, color});
+  // thêm cột mặc định cho mọi ngày
+  for(let d=0; d<DAYS; d++){ state.days[d][id] = false; }
+  // thêm cấu trúc liên quan
+  state.startDate[id] = null;
+  state.milestone[id] = {};
+  // lưu + render
+  save();
+  input.value="";
+  renderMemberChips(); renderStartControls(); renderLeaderboard(); renderChart(); renderTable();
+  toast("Đã thêm thành viên mới 🎉");
 }
 
-let chart;
-function buildChart(){
-  const ctx=document.getElementById('barChart');
-  const totals=members.map(m=>state.days.reduce((a,d)=>a+(d[m.id]?1:0),0));
-  if(chart)chart.destroy();
-  chart=new Chart(ctx,{type:'bar',data:{labels:members.map(m=>m.name),datasets:[{data:totals,backgroundColor:['#ff8fab','#a5b4fc','#9adbb3']}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,suggestedMax:30}}}});
-}
+/* ================== RENDER KHỐI ================== */
+let chart; // Chart.js instance
 
-const tableEl=document.getElementById('daysTable');
-function render(){
-  // summary start dates
-  let sumHtml="";
-  members.forEach(m=>{
-    if(state.startDate[m.id]) sumHtml+=`${m.name}: bắt đầu ${state.startDate[m.id]}<br>`;
-  });
-  document.getElementById('startSummary').innerHTML=sumHtml;
-
-  buildLeaderboard();
-  buildChart();
-  const thead=document.createElement('thead');
-  let headerRow=document.createElement('tr');
-  headerRow.innerHTML="<th>Ngày</th>";
-  members.forEach(m=>{headerRow.innerHTML+=`<th style="color:${m.color}">${m.name}</th>`;});
-  thead.appendChild(headerRow);
-
-  const tbody=document.createElement('tbody');
-  for(let d=0;d<DAYS;d++){
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><b>${d+1}</b></td>`;
-    members.forEach(m=>{
-      const td=document.createElement('td');
-      td.textContent=state.days[d][m.id]?"✅":"—";
-      td.className="daycell"+(state.days[d][m.id]?" done":"");
-      td.onclick=()=>doToggle(d,m.id);
-      td.ondblclick=()=>openJournal(d,m.id);
-      const key=`${m.id}_${d}`;
-      if(state.journal[key]){
-        const tip=document.createElement('div');
-        tip.className="tooltip";
-        tip.textContent=`⚖️ ${state.journal[key].weight||"-"}kg\n📏 ${state.journal[key].waist||"-"}cm\n📝 ${state.journal[key].note||""}`;
-        td.appendChild(tip);
-      }
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  }
-  tableEl.innerHTML="";
-  tableEl.appendChild(thead);
-  tableEl.appendChild(tbody);
-}
-subscribeRealtime();
-</script>
-</body>
-</html>
+function renderStartControls(){
+  // dropdown theo members
+  const sel = document.getElementById('whoSelect');
+  sel.innerHTML = "";
+  state.members.forEach(m=>{
+    const op = document.createElement('option');
+    op.value = m.id; op.text
