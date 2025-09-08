@@ -7,23 +7,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root{
-    /* Pastel pink-orange theme */
-    --p1:#ff9eb3; /* hồng nhạt */
-    --p2:#ffb88a; /* cam nhạt */
-    --p3:#ffe0a3; /* vàng kem */
-    --pink:#ff8fab; --peach:#ffb3c1; --apricot:#ffd6a5;
-    --mint:#b7e4c7; --sky:#cde5ff;
+    /* Pastel pink–peach theme */
+    --p1:#ff8fab;   /* hồng nhạt */
+    --p2:#ffb3c1;   /* hồng sáng */
+    --p3:#ffd6a5;   /* cam nhạt */
+    --p4:#ffe6b3;   /* vàng nhẹ */
+    --mint:#cdeccd;
+    --sky:#cfe4ff;
 
     --bg:#fff7fb; --bg-grad:#fff0f6;
-    --text:#2a2a2a; --muted:#6b7280;
-    --card:#ffffff; --border:#f1dfe6;
+    --text:#2b2b2b; --muted:#6b7280;
+    --card:#ffffff; --border:#f4dbe3;
     --chip:#ffeaf1; --chip-border:#ffd6e3;
 
-    --success:#22c55e; --warn:#f59e0b;
+    --col-huong:#ff8fab;
+    --col-thuy:#a5b4fc;
+    --col-lien:#9adbb3;
 
-    --col-huong:#ff8fab; /* Hương */
-    --col-thuy:#a5b4fc; /* Thùy  */
-    --col-lien:#b7e4c7; /* Liên  */
+    --success:#22c55e; --warn:#f59e0b;
   }
   *{box-sizing:border-box}
   body{
@@ -33,11 +34,11 @@
   }
   .wrap{max-width:1200px;margin:28px auto;padding:0 18px}
   .hero{
-    border:1px solid var(--border);border-radius:18px;padding:20px;
-    background:linear-gradient(135deg, #fff0f6 0%, #fff 45%, #fff5f0 100%);
-    box-shadow:0 12px 32px rgba(255, 179, 193,.25);
+    border:1px solid var(--border);border-radius:18px;padding:22px;
+    background:linear-gradient(135deg,#fff0f6 0%,#fff 45%,#fff5f0 100%);
+    box-shadow:0 12px 28px rgba(255,168,186,.20);
   }
-  .hero h1{margin:0;font-size:28px;letter-spacing:.2px}
+  .hero h1{margin:0;font-size:30px;letter-spacing:.2px}
   .subtitle{margin-top:6px;color:var(--muted)}
   .chips{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
   .chip{background:var(--chip);border:1px solid var(--chip-border);padding:6px 10px;border-radius:999px;font-size:12px}
@@ -47,14 +48,14 @@
 
   .card{
     background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;
-    box-shadow:0 10px 24px rgba(255,152,175,.15);
+    box-shadow:0 10px 24px rgba(255,152,175,.12);
   }
   .card h2{margin:0 0 12px;font-size:18px}
 
   .btn{border:1px solid var(--border);background:#fff;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
   .btn:hover{filter:brightness(1.03)}
-  .btn-pink{background:linear-gradient(90deg,var(--p1),var(--p2));border-color:#ffc3d1;color:#4a1d2a}
-  .btn-lt{background:#fff;border-color:#f2c3c9}
+  .btn-pink{background:linear-gradient(90deg,var(--p1),var(--p3));border-color:#ffc3d1;color:#4a1d2a}
+  .btn-soft{background:#fff;border-color:#f2c3c9}
 
   .row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);padding:10px;border-radius:12px}
   .lb{display:flex;flex-direction:column;gap:10px}
@@ -90,15 +91,15 @@
   .progressCol{display:flex;flex-direction:column;gap:10px}
 
   /* Toast & Modal */
-  .toast{position:fixed;right:16px;bottom:16px;background:#fff;border:1px solid var(--border);padding:12px 14px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.15);display:none}
-  .toast.show{display:block;animation:fade .2s ease-out}
+  .toast{position:fixed;right:16px;bottom:16px;background:#fff;border:1px solid var(--border);padding:12px 14px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.12);display:none}
+  .toast.show{display:block;animation:fade .18s ease-out}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.25);display:none;align-items:center;justify-content:center;padding:16px}
   .modal{background:#fff;border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;padding:16px}
   .modal h3{margin:0 0 10px}
   .modal .row{background:#fff}
-  input[type="text"], input[type="number"], textarea{
+  input[type="text"], input[type="number"], textarea, select{
     width:100%;background:#fff;border:1px solid #f1dfe6;border-radius:10px;padding:10px;color:var(--text)
   }
 
@@ -108,15 +109,11 @@
 </head>
 <body>
 <canvas id="confetti"></canvas>
-<audio id="ding" preload="auto">
-  <!-- very short beep-like ding (base64) -->
-  <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA... (shortened) ..." type="audio/mp3">
-</audio>
 
 <div class="wrap">
   <div class="hero">
     <h1>30-DAYS BYE-BYE MỠ BỤNG</h1>
-    <div class="subtitle">Mỗi người có <b>ngày bắt đầu riêng</b>. Có thể tick các ngày <b>đến hôm nay</b>, không tick tương lai. Thêm cân nặng/ảnh/ghi chú cho từng ngày.</div>
+    <div class="subtitle">Tone pastel hồng–cam nhạt. Mỗi người có <b>ngày bắt đầu riêng</b>. Được tick các ngày <b>đến hôm nay</b>, không tick tương lai. Có ghi chú/ảnh/cân nặng theo từng ngày & âm thanh “ding”.</div>
     <div class="chips">
       <span class="chip">✅ Backfill quá khứ</span>
       <span class="chip">🔔 Ding khi check-in</span>
@@ -124,478 +121,38 @@
     </div>
   </div>
 
-  <!-- BẮT ĐẦU -->
+  <!-- CHỌN NGÀY BẮT ĐẦU -->
   <div class="card" style="margin-top:14px">
-    <h2>🗓️ Ngày bắt đầu thử thách (mỗi người)</h2>
-    <div class="settings" id="startSettings" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+    <h2>🗓️ Thiết lập ngày bắt đầu</h2>
+    <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="min-width:180px">
+        <label>Thành viên</label>
+        <select id="whoSelect">
+          <option value="Huong">Hương</option>
+          <option value="Thuy">Thùy</option>
+          <option value="Lien">Liên</option>
+        </select>
+      </div>
+      <div>
+        <label>Ngày bắt đầu</label>
+        <input type="date" id="startDateInput"/>
+      </div>
+      <div style="align-self:flex-end">
+        <button class="btn btn-pink" id="saveStart">Lưu ngày bắt đầu</button>
+      </div>
+      <span class="muted">Hệ thống dùng ngày này để tính “hôm nay = ngày thứ mấy” với từng người.</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px" id="startSummary"></div>
   </div>
 
   <div class="grid">
-    <!-- TRÁI -->
+    <!-- LEFT -->
     <div class="card">
-      <h2>🏆 Leaderboard (tổng ✅ & streak)</h2>
+      <h2>🏆 Leaderboard (tổng ✅ & 🔥streak)</h2>
       <div id="leaderboard" class="lb"></div>
 
       <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-pink"  onclick="checkin('Huong')">✅ Check-in: Hương</button>
         <button class="btn btn-pink"  onclick="checkin('Thuy')" style="background:linear-gradient(90deg,#a5b4fc,#c7d2fe)">✅ Check-in: Thùy</button>
-        <button class="btn btn-pink"  onclick="checkin('Lien')" style="background:linear-gradient(90deg,#b7e4c7,#d8f3dc)">✅ Check-in: Liên</button>
-        <span class="muted">Nút check-in đánh vào “hôm nay”; quá khứ bấm trực tiếp ô.</span>
-      </div>
-
-      <h2 style="margin-top:18px">📅 Bảng chi tiết 30 ngày (lộ trình cá nhân)</h2>
-      <div class="legend">
-        <span><i class="dot" style="background:var(--col-huong)"></i>Hương</span>
-        <span><i class="dot" style="background:var(--col-thuy)"></i>Thùy</span>
-        <span><i class="dot" style="background:var(--col-lien)"></i>Liên</span>
-      </div>
-      <div style="overflow-x:auto;margin-top:8px">
-        <table id="daysTable"></table>
-      </div>
-
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-lt" onclick="exportData()">⬇️ Xuất JSON</button>
-        <label>
-          <input type="file" accept="application/json" style="display:none" id="importFile"/>
-          <button class="btn btn-lt" onclick="document.getElementById('importFile').click()">⬆️ Nhập JSON</button>
-        </label>
-        <button class="btn btn-lt" onclick="resetAll()">🔁 Reset toàn bộ</button>
-        <span class="muted">Dữ liệu lưu localStorage (mỗi trình duyệt riêng).</span>
-      </div>
-    </div>
-
-    <!-- PHẢI -->
-    <div class="card">
-      <h2>📊 Biểu đồ & 📈 Tiến độ cá nhân</h2>
-      <canvas id="barChart" height="220" style="background:#fff;border-radius:12px;border:1px solid var(--border)"></canvas>
-      <div id="progressWrap" class="progressCol" style="margin-top:16px"></div>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
-
-<!-- MODAL NHẬT KÝ -->
-<div id="backdrop" class="modal-backdrop">
-  <div class="modal">
-    <h3 id="modalTitle">Nhật ký</h3>
-    <div style="display:grid;gap:10px">
-      <div>
-        <label>Cân nặng (kg)</label>
-        <input id="inpWeight" type="number" min="0" step="0.1" placeholder="Ví dụ: 55.4"/>
-      </div>
-      <div>
-        <label>Ghi chú / Cảm nhận</label>
-        <textarea id="inpNote" rows="3" placeholder="Hôm nay plank 2 phút, uống 2L nước..."></textarea>
-      </div>
-      <div>
-        <label>Ảnh (URL) hoặc tải ảnh</label>
-        <input id="inpImgUrl" type="text" placeholder="https://..."/>
-        <div class="row" style="margin-top:6px">
-          <input id="inpImgFile" type="file" accept="image/*"/>
-          <span class="muted">Nếu chọn ảnh, mình sẽ lưu bản thu nhỏ vào trình duyệt.</span>
-        </div>
-      </div>
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn btn-lt" onclick="closeModal()">Huỷ</button>
-        <button class="btn btn-pink" onclick="saveJournal()">Lưu nhật ký</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ================== STATE ================== */
-const KEY = "30days-bellyfat-challenge-v7";
-const members = [
-  { id:"Huong", name:"Hương", color:"var(--col-huong)", avatarClass:"a-huong" },
-  { id:"Thuy",  name:"Thùy",  color:"var(--col-thuy)",  avatarClass:"a-thuy"  },
-  { id:"Lien",  name:"Liên",  color:"var(--col-lien)",  avatarClass:"a-lien"  }
-];
-const DAYS = 30;
-/* state:
-  days[dayIndex][memberId]=boolean
-  meta.startDate[memberId]=YYYY-MM-DD
-  journal[dayIndex][memberId]={ w:number|null, note:string, imgUrl:string|null, imgData:string|null }
-  meta.milestoneShown[memberId]={7:true,15:true,30:true}  // để không hiện lặp
-*/
-function defaultState(){
-  return {
-    days: Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
-    journal: Array.from({length:DAYS},()=>({Huong:null,Thuy:null,Lien:null})),
-    meta:{
-      startDate:{Huong:null,Thuy:null,Lien:null},
-      milestoneShown:{Huong:{},Thuy:{},Lien:{}}
-    }
-  };
-}
-function load(){
-  const raw = localStorage.getItem(KEY);
-  if(!raw){ const s=defaultState(); save(s); return s; }
-  try{
-    const s=JSON.parse(raw);
-    if(!s.meta) s.meta={startDate:{Huong:null,Thuy:null,Lien:null}, milestoneShown:{Huong:{},Thuy:{},Lien:{}}};
-    if(!s.journal) s.journal = Array.from({length:DAYS},()=>({Huong:null,Thuy:null,Lien:null}));
-    return s;
-  }catch(_){ const s=defaultState(); save(s); return s; }
-}
-function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
-let state = load();
-
-/* ================== DATE HELPERS ================== */
-function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
-function parseYMD(s){ if(!s) return null; const [y,m,d]=s.split('-').map(Number); return startOfDay(new Date(y,m-1,d)); }
-function daysDiff(a,b){ return Math.floor((startOfDay(a)-startOfDay(b))/86400000); }
-function today(){ return startOfDay(new Date()); }
-/* index hôm nay theo startDate từng người; null: chưa set; <0: chưa bắt đầu; >=30: quá hạn */
-function todayIndexFor(id){
-  const sdStr = state.meta.startDate[id];
-  if(!sdStr) return null;
-  return daysDiff(today(), parseYMD(sdStr));
-}
-/* cho click: <= hôm nay (backfill), không > hôm nay; nếu đã qua 30d, vẫn sửa quá khứ */
-function isCellEnabled(day,id){
-  const idx=todayIndexFor(id);
-  if(idx===null) return false;
-  if(idx<0) return false;
-  if(idx>=DAYS) return day<=DAYS-1;
-  return day<=idx;
-}
-
-/* ================== AGG ================== */
-function totalOf(id){ return state.days.reduce((a,d)=>a+(d[id]?1:0),0); }
-function streakOf(id){
-  const idx=todayIndexFor(id);
-  if(idx===null) return 0;
-  const last=Math.min(Math.max(idx,-1),DAYS-1);
-  if(last<0) return 0;
-  let s=0;
-  for(let i=last;i>=0;i--){
-    if(state.days[i][id]) s++; else break;
-  }
-  return s;
-}
-
-/* ================== UI ELS ================== */
-const lbEl = document.getElementById('leaderboard');
-const tableEl = document.getElementById('daysTable');
-const prWrap = document.getElementById('progressWrap');
-const toastEl = document.getElementById('toast');
-const dingEl  = document.getElementById('ding');
-
-/* ================== START SETTINGS ================== */
-const startSettings = document.getElementById('startSettings');
-function buildStartSettings(){
-  startSettings.innerHTML="";
-  members.forEach(m=>{
-    const box=document.createElement('div');
-    box.className="row";
-    box.style.background="#fff";
-    box.innerHTML = `
-      <div class="name" style="min-width:auto">
-        <span class="avatar ${m.avatarClass}">${m.name[0]}</span>
-        <b style="color:${m.color}">${m.name}</b>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <input type="date" id="start_${m.id}" value="${state.meta.startDate[m.id] ?? ""}"/>
-        <button class="btn btn-lt" onclick="saveStart('${m.id}')">Lưu</button>
-        <span class="muted" id="hint_${m.id}"></span>
-      </div>
-    `;
-    startSettings.appendChild(box);
-    updateStartHints(m.id);
-  });
-}
-function saveStart(id){
-  const inp=document.getElementById('start_'+id);
-  if(!inp.value){ toast("Chọn ngày bắt đầu cho "+id); return; }
-  state.meta.startDate[id]=inp.value; save(state); refresh();
-}
-function updateStartHints(id){
-  const hint=document.getElementById('hint_'+id);
-  const idx=todayIndexFor(id);
-  if(hint){
-    if(idx===null) hint.textContent="Chưa thiết lập.";
-    else if(idx<0) hint.textContent="Chưa đến ngày bắt đầu.";
-    else if(idx>=DAYS) hint.textContent="Đã qua 30 ngày.";
-    else hint.textContent="Hôm nay: Ngày "+(idx+1);
-  }
-}
-
-/* ================== LEADERBOARD / PROGRESS ================== */
-function buildLeaderboard(){
-  lbEl.innerHTML="";
-  const rows = members.map(m=>({...m,total:totalOf(m.id),streak:streakOf(m.id)}))
-                      .sort((a,b)=> b.total - a.total || b.streak - a.streak);
-  rows.forEach((m,idx)=>{
-    const r=document.createElement('div'); r.className="row";
-    const medal=document.createElement('div'); medal.className="medal";
-    if(idx===1) medal.classList.add('silver'); if(idx===2) medal.classList.add('bronze');
-    medal.textContent = idx+1;
-    const name=document.createElement('div'); name.className="name";
-    name.innerHTML = `<span class="avatar ${m.avatarClass}">${m.name[0]}</span><b style="color:${m.color}">${m.name}</b>`;
-    const bar=document.createElement('div'); bar.className="bar";
-    const span=document.createElement('span'); span.style.width=(m.total/DAYS*100)+"%"; span.style.background=m.color; bar.appendChild(span);
-    const cnt=document.createElement('div'); cnt.className="cnt"; cnt.textContent = `${m.total}/${DAYS} • 🔥 ${m.streak}`;
-    r.append(medal,name,bar,cnt); lbEl.appendChild(r);
-  });
-}
-function buildProgress(){
-  prWrap.innerHTML="";
-  members.forEach(m=>{
-    const t=totalOf(m.id);
-    const idx=todayIndexFor(m.id);
-    const box=document.createElement('div'); box.className="row";
-    const label=document.createElement('div');
-    let nowTxt="Chưa thiết lập";
-    if(idx!==null){
-      if(idx<0) nowTxt="Chưa bắt đầu";
-      else if(idx>=DAYS) nowTxt="Đã qua 30 ngày";
-      else nowTxt=`Hôm nay: Ngày ${idx+1}`;
-    }
-    label.innerHTML = `<b style="color:${m.color}">${m.name}</b> • ${Math.round(t/DAYS*100)}% • ${nowTxt}`;
-    const bar=document.createElement('div'); bar.className="bar";
-    const span=document.createElement('span'); span.style.width=(t/DAYS*100)+"%"; span.style.background=m.color; bar.appendChild(span);
-    const nxt=document.createElement('div'); nxt.className="cnt"; nxt.textContent = t>=DAYS? "🎉 30/30" : `Đã ✅: ${t}`;
-    box.append(label,bar,nxt); prWrap.appendChild(box);
-  });
-}
-
-/* ================== TABLE ================== */
-let journalTarget = null; // {day, id}
-function buildTable(){
-  const thead=document.createElement('thead');
-  const trh=document.createElement('tr');
-  trh.innerHTML = `<th>Ngày</th>` + members.map(m=>`<th style="color:${m.color}">${m.name}</th>`).join("");
-  thead.appendChild(trh);
-
-  const tbody=document.createElement('tbody');
-  for(let d=0; d<DAYS; d++){
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td><b>Ngày ${d+1}</b></td>`;
-    members.forEach(m=>{
-      const td=document.createElement('td');
-      const enabled = isCellEnabled(d, m.id);
-      const checked = !!state.days[d][m.id];
-      td.className = "daycell " + (checked?"done ":"") + (enabled?"enabled":"lock");
-      td.dataset.day=d; td.dataset.id=m.id;
-      td.innerHTML = checked ? "✅" : `<span style="opacity:.35">—</span>`;
-
-      // nút mở nhật ký
-      const pin = document.createElement('span'); pin.className="editpin"; pin.textContent="📝";
-      pin.title="Xem/ghi nhật ký ngày này";
-      pin.onclick = (e)=>{ e.stopPropagation(); openJournal(d,m.id); };
-
-      if(enabled){
-        td.title = `${m.name} • Ngày ${d+1} • Nhấn để bật/tắt`;
-        td.onclick = ()=> doToggle(d, m.id);
-      }else{
-        td.title = `${m.name} • Ngày ${d+1}`;
-      }
-      td.appendChild(pin);
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  }
-  tableEl.innerHTML=""; tableEl.append(thead,tbody);
-}
-
-/* ================== JOURNAL MODAL ================== */
-const backdrop=document.getElementById('backdrop');
-const modalTitle=document.getElementById('modalTitle');
-const inpWeight=document.getElementById('inpWeight');
-const inpNote=document.getElementById('inpNote');
-const inpImgUrl=document.getElementById('inpImgUrl');
-const inpImgFile=document.getElementById('inpImgFile');
-
-function openJournal(day,id){
-  journalTarget={day,id};
-  modalTitle.textContent = `Nhật ký • ${members.find(m=>m.id===id).name} • Ngày ${day+1}`;
-  const j = state.journal[day][id] || {w:null,note:"",imgUrl:"",imgData:null};
-  inpWeight.value = j.w ?? "";
-  inpNote.value = j.note ?? "";
-  inpImgUrl.value = j.imgUrl ?? "";
-  inpImgFile.value = "";
-  backdrop.style.display="flex";
-}
-function closeModal(){ backdrop.style.display="none"; journalTarget=null; }
-
-function readFileAsDataURL(file){
-  return new Promise((res,rej)=>{
-    const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.onerror=rej; rd.readAsDataURL(file);
-  });
-}
-async function saveJournal(){
-  if(!journalTarget) return;
-  const {day,id} = journalTarget;
-  let imgData=null, imgUrl=inpImgUrl.value.trim();
-  if(inpImgFile.files && inpImgFile.files[0]){
-    try{ imgData = await readFileAsDataURL(inpImgFile.files[0]); }catch{}
-  }
-  state.journal[day][id] = {
-    w: inpWeight.value? Number(inpWeight.value) : null,
-    note: inpNote.value.trim(),
-    imgUrl: imgUrl || null,
-    imgData: imgData || (state.journal[day][id]?.imgData ?? null)
-  };
-  save(state);
-  closeModal();
-  toast("Đã lưu nhật ký.");
-}
-
-/* ================== CHART ================== */
-let chart;
-function buildChart(){
-  const ctx=document.getElementById('barChart');
-  const totals=members.map(m=>totalOf(m.id));
-  if(chart) chart.destroy();
-  chart=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:members.map(m=>m.name),
-      datasets:[{
-        label:'Số ngày đã ✅',
-        data:totals,
-        backgroundColor:['#ff8fab','#ffb3c1','#ffd6a5'], /* pastel pink/orange */
-        borderColor:['#ff8fab','#ffb3c1','#ffd6a5'],
-        borderWidth:1
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:(c)=>`${c.parsed.y}/${DAYS} ngày`}}
-      },
-      scales:{
-        y:{beginAtZero:true,suggestedMax:30,ticks:{color:'#6b7280'},grid:{color:'#f3cdd6'}},
-        x:{ticks:{color:'#6b7280'},grid:{display:false}}
-      }
-    }
-  });
-}
-
-/* ================== CONFETTI + TOAST + DING ================== */
-const confettiCanvas=document.getElementById('confetti');
-const cctx=confettiCanvas.getContext('2d');
-function sizeCanvas(){ confettiCanvas.width=innerWidth; confettiCanvas.height=innerHeight; }
-sizeCanvas(); addEventListener('resize',sizeCanvas);
-let particles=[];
-function burst(x,y,emoji="🎉"){
-  for(let i=0;i<28;i++){
-    particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,size:18+Math.random()*10});
-  }
-}
-(function tick(){
-  cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-  particles.forEach(p=>{p.life--; p.x+=p.vx; p.vy+=0.18; p.y+=p.vy; p.rot+=p.spin;
-    cctx.save(); cctx.translate(p.x,p.y); cctx.rotate(p.rot); cctx.font=p.size+"px serif"; cctx.fillText(p.emoji,0,0); cctx.restore();
-  });
-  particles=particles.filter(p=>p.life>0);
-  requestAnimationFrame(tick);
-})();
-
-function toast(msg, ms=2200){
-  toastEl.textContent=msg; toastEl.classList.add('show');
-  setTimeout(()=>toastEl.classList.remove('show'), ms);
-}
-function playDing(){ try{ dingEl.currentTime=0; dingEl.play(); }catch{} }
-
-/* ================== MILESTONES & STREAK WARN ================== */
-const QUOTES = [
-  "Kỷ luật đưa bạn tới nơi động lực không thể.",
-  "Mỗi ngày một bước nhỏ, 30 ngày một bước ngoặt.",
-  "Bạn không cần nhanh – chỉ cần kiên trì.",
-  "Cơ thể là nhật ký của thói quen. Hãy viết điều bạn tự hào!"
-];
-function showMilestone(id, total){
-  const q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
-  toast(`🏅 ${getName(id)} đạt mốc ${total}/30! ${q}`, 4000);
-  burst(innerWidth/2, innerHeight/3, "✨");
-}
-function getName(id){ return members.find(m=>m.id===id).name; }
-
-function checkMilestones(id){
-  const t=totalOf(id);
-  [7,15,30].forEach(m=>{
-    if(t===m && !state.meta.milestoneShown[id][m]){
-      state.meta.milestoneShown[id][m]=true; save(state);
-      showMilestone(id, m);
-    }
-  });
-}
-/* Cảnh báo streak giảm nếu hôm qua không ✅ (chỉ khi đã bắt đầu) */
-function checkStreakDropOnLoad(){
-  members.forEach(m=>{
-    const idx=todayIndexFor(m.id);
-    if(idx===null || idx<=0 || idx>=DAYS) return;
-    const yesterday = idx-1;
-    if(!state.days[yesterday][m.id]){ // bỏ lỡ hôm qua
-      toast(`⚠️ ${m.name} bị giảm streak (bỏ lỡ ngày ${yesterday+1}).`);
-    }
-  });
-}
-
-/* ================== ACTIONS ================== */
-function doToggle(day,id){
-  if(!isCellEnabled(day,id)) return;
-  state.days[day][id] = !state.days[day][id];
-  save(state); refresh();
-}
-function checkin(id){
-  const idx=todayIndexFor(id);
-  if(idx===null){ toast("Chưa đặt ngày bắt đầu cho "+getName(id)); return; }
-  if(idx<0){ toast("Chưa đến ngày bắt đầu."); return; }
-  if(idx>=DAYS){ toast("Đã kết thúc 30 ngày."); return; }
-  if(state.days[idx][id]){ toast("Hôm nay đã check-in rồi."); return; }
-  state.days[idx][id]=true; save(state);
-  playDing();
-  burst(innerWidth/2, innerHeight/3, "🎊");
-  checkMilestones(id);
-  refresh();
-}
-
-function resetAll(){
-  if(!confirm("Xoá toàn bộ dữ liệu & ngày bắt đầu?")) return;
-  state = defaultState(); save(state); refresh();
-}
-function exportData(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a');
-  a.href=url; a.download='30days-data.json'; a.click(); URL.revokeObjectURL(url);
-}
-document.getElementById('importFile').addEventListener('change', (e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  const rd=new FileReader(); rd.onload=()=>{
-    try{ const obj=JSON.parse(rd.result); if(!obj.days||obj.days.length!==DAYS) throw 0; state=obj; save(state); refresh(); }
-    catch{ alert("Tệp không hợp lệ."); }
-  };
-  rd.readAsText(f); e.target.value="";
-});
-
-/* ================== BUILD ================== */
-function buildTableAndHighlights(){
-  buildTable();
-  // highlight “hôm nay” mỗi người
-  members.forEach(m=>{
-    const idx=todayIndexFor(m.id);
-    if(idx!==null && idx>=0 && idx<DAYS){
-      const cell=tableEl.querySelector(`td.daycell[data-day="${idx}"][data-id="${m.id}"]`);
-      if(cell) cell.style.boxShadow="0 0 0 2px rgba(255,143,171,.6)";
-    }
-  });
-}
-function refresh(){
-  buildStartSettings();
-  members.forEach(m=>updateStartHints(m.id));
-  buildLeaderboard();
-  buildProgress();
-  buildTableAndHighlights();
-  buildChart();
-}
-refresh();
-checkStreakDropOnLoad();
-</script>
-</body>
-</html>
+        <button class="btn btn-pink"  onclick="checkin('Lie
