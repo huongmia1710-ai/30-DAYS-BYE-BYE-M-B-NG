@@ -48,6 +48,20 @@
     <div class="subtitle">Đừng chờ động lực mới bắt đầu. Hãy bắt đầu để tạo ra động lực. 🌸</div>
   </div>
 
+  <!-- Chọn ngày bắt đầu -->
+  <div style="margin-top:20px">
+    <label>Thành viên:</label>
+    <select id="whoSelect">
+      <option value="Huong">Hương</option>
+      <option value="Thuy">Thùy</option>
+      <option value="Lien">Liên</option>
+    </select>
+    <label>Ngày bắt đầu:</label>
+    <input type="date" id="startDateInput"/>
+    <button onclick="saveStart()">Lưu ngày bắt đầu</button>
+    <div id="startSummary" style="margin-top:8px"></div>
+  </div>
+
   <!-- Leaderboard -->
   <div style="margin-top:20px" id="leaderboard"></div>
 
@@ -106,6 +120,7 @@ const members=[
 function defaultState(){
   return {
     days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
+    startDate:{Huong:null,Thuy:null,Lien:null},
     journal:{}
   };
 }
@@ -152,9 +167,33 @@ function saveJournal(e){
 }
 
 /* ================== APP LOGIC ================== */
+function saveStart(){
+  const who=document.getElementById('whoSelect').value;
+  const date=document.getElementById('startDateInput').value;
+  if(date){ state.startDate[who]=date; save(); render(); }
+}
+
+function getStreak(id){
+  let streak=0,maxStreak=0;
+  for(let d=0;d<DAYS;d++){
+    if(state.days[d][id]){streak++; if(streak>maxStreak)maxStreak=streak;}
+    else{streak=0;}
+  }
+  return maxStreak;
+}
+
 function doToggle(day,id){
+  // Không tick trước ngày bắt đầu
+  const start=state.startDate[id];
+  if(start){
+    const startIdx=Math.floor((new Date()-new Date(start))/(1000*60*60*24));
+    if(day>startIdx){ toast("Chưa tới ngày này!"); return; }
+  }
   state.days[day][id]=!state.days[day][id];
-  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();toast(randomMsg());
+  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();
+  const total=state.days.reduce((a,d)=>a+(d[id]?1:0),0);
+  if([7,15,30].includes(total)){ toast(`🎉 ${members.find(m=>m.id==id).name} đạt mốc ${total} ngày!`); burst(innerWidth/2, innerHeight/2,"🎉"); }
+  else{ toast(randomMsg()); }
   render();
 }
 
@@ -162,7 +201,8 @@ function buildLeaderboard(){
   let html="<h2>🏆 Leaderboard</h2>";
   members.forEach(m=>{
     const total=state.days.reduce((a,d)=>a+(d[m.id]?1:0),0);
-    html+=`<div><b style="color:${m.color}">${m.name}</b>: ${total}/${DAYS} ngày</div>`;
+    const streak=getStreak(m.id);
+    html+=`<div><b style="color:${m.color}">${m.name}</b>: ${total}/${DAYS} ngày • 🔥 ${streak} streak</div>`;
   });
   document.getElementById('leaderboard').innerHTML=html;
 }
@@ -177,6 +217,13 @@ function buildChart(){
 
 const tableEl=document.getElementById('daysTable');
 function render(){
+  // summary start dates
+  let sumHtml="";
+  members.forEach(m=>{
+    if(state.startDate[m.id]) sumHtml+=`${m.name}: bắt đầu ${state.startDate[m.id]}<br>`;
+  });
+  document.getElementById('startSummary').innerHTML=sumHtml;
+
   buildLeaderboard();
   buildChart();
   const thead=document.createElement('thead');
