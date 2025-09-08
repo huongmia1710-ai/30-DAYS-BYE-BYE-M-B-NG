@@ -1,308 +1,356 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>30-DAYS BYE-BYE MỠ BỤNG</title>
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root{
-      --pink:#ef5da8;   /* Hương */
-      --blue:#4f46e5;   /* Thùy  */
-      --green:#16a34a;  /* Liên  */
-      --bg:#0b0f19; --card:#111729; --muted:#9aa4b2; --text:#e5e7eb; --accent:#22c55e;
-      --grid:#1b2336; --border:#2b3650;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#0b0f19 0%,#0a0e17 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";}
-    .wrap{max-width:1100px;margin:32px auto;padding:0 16px;}
-    h1{font-size:28px;margin:0 0 6px}
-    .sub{color:var(--muted);font-size:14px;margin-bottom:20px}
-    .grid{display:grid;gap:16px}
-    @media(min-width:900px){.grid{grid-template-columns:1.2fr .8fr}}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
-    .card h2{margin:0 0 12px;font-size:18px}
-    .lb{display:flex;flex-direction:column;gap:10px}
-    .row{display:flex;align-items:center;gap:12px;background:#0e1630;border:1px solid var(--border);padding:10px;border-radius:12px}
-    .medal{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700}
-    .name{min-width:76px}
-    .cnt{margin-left:auto;font-variant-numeric:tabular-nums}
-    .bar{width:100%;height:10px;background:var(--grid);border-radius:999px;overflow:hidden}
-    .bar>span{display:block;height:100%}
-    .pink{color:var(--pink)} .blue{color:var(--blue)} .green{color:var(--green)}
-    .b-pink{background:var(--pink)} .b-blue{background:var(--blue)} .b-green{background:var(--green)}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    button{border:1px solid var(--border);background:#0f1732;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-    button:hover{filter:brightness(1.1)}
-    .btn-pink{border-color:color-mix(in oklab, var(--pink), white 20%);background:color-mix(in oklab, var(--pink), black 80%)}
-    .btn-blue{border-color:color-mix(in oklab, var(--blue), white 20%);background:color-mix(in oklab, var(--blue), black 80%)}
-    .btn-green{border-color:color-mix(in oklab, var(--green), white 20%);background:color-mix(in oklab, var(--green), black 80%)}
-    .pill{font-size:12px;color:var(--muted)}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
-    th,td{text-align:center;padding:8px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-    tbody tr{background:#0f1732}
-    th:first-child,td:first-child{border-left:1px solid var(--border);border-top-left-radius:10px;border-bottom-left-radius:10px;text-align:left}
-    th:last-child,td:last-child{border-right:1px solid var(--border);border-top-right-radius:10px;border-bottom-right-radius:10px}
-    .daycell{cursor:pointer;user-select:none}
-    .daycell.done{background:#14233f;box-shadow:inset 0 0 0 1px #28406f}
-    .legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:8px}
-    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
-    .foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
-    .muted{color:var(--muted)}
-    .today{font-weight:700}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>30-DAYS BYE-BYE MỠ BỤNG</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --pink:#ef5da8; --blue:#4f46e5; --green:#16a34a;
+    --bg:#0b0f19; --card:#111729; --muted:#9aa4b2; --text:#e5e7eb; --accent:#22c55e;
+    --grid:#1b2336; --border:#2b3650; --input:#0f1732;
+  }
+  /* Light theme */
+  :root[data-theme="light"]{
+    --bg:#f6f7fb; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+    --grid:#e6eaf2; --border:#d5dbea; --input:#f3f5fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+  .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+  h1{margin:0 0 6px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .topbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .topbar .card{padding:10px 12px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:900px){.grid{grid-template-columns:1.2fr .8fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+  .card h2{margin:0 0 12px;font-size:18px}
+  .lb{display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;align-items:center;gap:12px;background:var(--input);border:1px solid var(--border);padding:10px;border-radius:12px}
+  .medal{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700}
+  .name{min-width:76px}
+  .cnt{margin-left:auto;font-variant-numeric:tabular-nums}
+  .bar{width:100%;height:10px;background:var(--grid);border-radius:999px;overflow:hidden}
+  .bar>span{display:block;height:100%}
+  .pink{color:var(--pink)} .blue{color:var(--blue)} .green{color:var(--green)}
+  .btn{border:1px solid var(--border);background:var(--input);color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn:hover{filter:brightness(1.05)}
+  .btn-pink{border-color:color-mix(in oklab, var(--pink), white 20%);background:color-mix(in oklab, var(--pink), black 85%)}
+  .btn-blue{border-color:color-mix(in oklab, var(--blue), white 20%);background:color-mix(in oklab, var(--blue), black 85%)}
+  .btn-green{border-color:color-mix(in oklab, var(--green), white 20%);background:color-mix(in oklab, var(--green), black 85%)}
+  :root[data-theme="light"] .btn-pink{background:color-mix(in oklab, var(--pink), white 85%)}
+  :root[data-theme="light"] .btn-blue{background:color-mix(in oklab, var(--blue), white 85%)}
+  :root[data-theme="light"] .btn-green{background:color-mix(in oklab, var(--green), white 85%)}
+  .pill{font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  th,td{text-align:center;padding:8px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  tbody tr{background:var(--input)}
+  th:first-child,td:first-child{border-left:1px solid var(--border);border-top-left-radius:10px;border-bottom-left-radius:10px;text-align:left}
+  th:last-child,td:last-child{border-right:1px solid var(--border);border-top-right-radius:10px;border-bottom-right-radius:10px}
+  .daycell{cursor:pointer;user-select:none}
+  .daycell.done{box-shadow:inset 0 0 0 2px color-mix(in oklab, var(--accent), black 20%); background:color-mix(in oklab, var(--accent), transparent 80%)}
+  .daycell.lock{opacity:.35; cursor:not-allowed}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:8px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+  .foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .muted{color:var(--muted)}
+  .today{font-weight:700}
+  .settings{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  input[type="date"]{background:var(--input);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+  .sticky-head{position:sticky;left:0;background:var(--card)}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>30-DAYS BYE-BYE MỠ BỤNG</h1>
-    <div class="sub">Thử thách 30 ngày • Thành viên: <b class="pink">Hương</b>, <b class="blue">Thùy</b>, <b class="green">Liên</b> • <span id="today" class="today"></span></div>
+<div class="wrap">
+  <h1>30-DAYS BYE-BYE MỠ BỤNG</h1>
+  <div class="sub">Thành viên: <b class="pink">Hương</b>, <b class="blue">Thùy</b>, <b class="green">Liên</b> • <span id="today" class="today"></span></div>
 
-    <div class="grid">
-      <!-- LEFT: Leaderboard + Bảng 30 ngày -->
-      <div class="card">
-        <h2>🏆 Leaderboard (xếp theo số ngày ✅)</h2>
-        <div id="leaderboard" class="lb"></div>
-
-        <div class="controls">
-          <button class="btn-pink" onclick="checkin('Huong')">✅ Check-in hôm nay: Hương</button>
-          <button class="btn-blue" onclick="checkin('Thuy')">✅ Check-in hôm nay: Thùy</button>
-          <button class="btn-green" onclick="checkin('Lien')">✅ Check-in hôm nay: Liên</button>
-          <span class="pill">Mẹo: bạn có thể nhấn trực tiếp vào ô ngày trong bảng để bật/tắt ✅.</span>
-        </div>
-
-        <h2 style="margin-top:18px">📅 Bảng chi tiết 30 ngày</h2>
-        <div class="legend">
-          <span><i class="dot" style="background:var(--pink)"></i>Hương</span>
-          <span><i class="dot" style="background:var(--blue)"></i>Thùy</span>
-          <span><i class="dot" style="background:var(--green)"></i>Liên</span>
-          <span class="muted">• Ô có viền đậm = đã hoàn thành</span>
-        </div>
-        <div style="overflow-x:auto;margin-top:8px">
-          <table id="daysTable"></table>
-        </div>
-
-        <div class="foot">
-          <button onclick="resetAll()">🔁 Reset toàn bộ</button>
-          <button onclick="exportData()">⬇️ Xuất JSON</button>
-          <label>
-            <input type="file" accept="application/json" style="display:none" id="importFile" />
-            <button onclick="document.getElementById('importFile').click()">⬆️ Nhập JSON</button>
-          </label>
-          <span class="muted">Dữ liệu lưu tự động trong trình duyệt (localStorage).</span>
-        </div>
-      </div>
-
-      <!-- RIGHT: Chart + Progress -->
-      <div class="card">
-        <h2>📊 Biểu đồ cột & 📈 Tiến độ</h2>
-        <canvas id="barChart" height="200" style="background:#0e1630;border-radius:12px;border:1px solid var(--border)"></canvas>
-
-        <div id="progressWrap" style="margin-top:16px;display:flex;flex-direction:column;gap:10px"></div>
-      </div>
+  <div class="topbar">
+    <div class="card settings">
+      <label><b>Ngày bắt đầu:</b> <input type="date" id="startDateInput"/></label>
+      <button class="btn" id="saveStart">Lưu ngày bắt đầu</button>
+      <button class="btn" id="themeBtn">Đổi giao diện</button>
+      <span class="pill">Hệ thống sẽ map Ngày 1→30 theo lịch thật & khoá ngày tương lai.</span>
     </div>
   </div>
 
-  <script>
-    // ====== DATA MODEL ======
-    const KEY = "30days-bellyfat-challenge-v1";
-    const members = [
-      { id:"Huong", name:"Hương", color:"var(--pink)"},
-      { id:"Thuy",  name:"Thùy",  color:"var(--blue)"},
-      { id:"Lien",  name:"Liên",  color:"var(--green)"}
-    ];
-    const DAYS = 30;
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="card">
+      <h2>🏆 Leaderboard (tổng ✅ & streak)</h2>
+      <div id="leaderboard" class="lb"></div>
 
-    function initState(){
-      const saved = localStorage.getItem(KEY);
-      if(saved){
-        try{ return JSON.parse(saved); }catch(e){}
-      }
-      // default empty matrix false
-      const state = {days: Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false}))};
-      persist(state);
-      return state;
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="checkin('Huong')">✅ Check-in hôm nay: Hương</button>
+        <button class="btn btn-blue" onclick="checkin('Thuy')">✅ Check-in hôm nay: Thùy</button>
+        <button class="btn btn-green" onclick="checkin('Lien')">✅ Check-in hôm nay: Liên</button>
+        <span class="pill">Tip: có thể nhấn trực tiếp vào ô ngày (đến hôm nay).</span>
+      </div>
+
+      <h2 style="margin-top:18px">📅 Bảng chi tiết 30 ngày</h2>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--pink)"></i>Hương</span>
+        <span><i class="dot" style="background:var(--blue)"></i>Thùy</span>
+        <span><i class="dot" style="background:var(--green)"></i>Liên</span>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px">
+        <table id="daysTable"></table>
+      </div>
+
+      <div class="foot">
+        <button class="btn" onclick="resetAll()">🔁 Reset toàn bộ</button>
+        <button class="btn" onclick="exportData()">⬇️ Xuất JSON</button>
+        <label>
+          <input type="file" accept="application/json" style="display:none" id="importFile"/>
+          <button class="btn" onclick="document.getElementById('importFile').click()">⬆️ Nhập JSON</button>
+        </label>
+        <span class="muted">Dữ liệu lưu trong trình duyệt (localStorage).</span>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+      <h2>📊 Biểu đồ cột & 📈 Tiến độ</h2>
+      <canvas id="barChart" height="200" style="background:var(--input);border-radius:12px;border:1px solid var(--border)"></canvas>
+      <div id="progressWrap" style="margin-top:16px;display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====== CONFIG & STATE ======
+  const KEY = "30days-bellyfat-challenge-v2";
+  const members = [
+    { id:"Huong", name:"Hương", color:"var(--pink)"},
+    { id:"Thuy",  name:"Thùy",  color:"var(--blue)"},
+    { id:"Lien",  name:"Liên",  color:"var(--green)"}
+  ];
+  const DAYS = 30;
+
+  function defaultState(){
+    return {
+      days: Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
+      meta:{ startDate: null, theme: "dark" }
+    };
+  }
+
+  function load(){
+    const raw = localStorage.getItem(KEY);
+    if(!raw) { const st = defaultState(); save(st); return st; }
+    try{
+      const st = JSON.parse(raw);
+      // migrate if old version
+      if(!st.meta) st.meta = { startDate: null, theme: "dark" };
+      return st;
+    }catch(e){ const st = defaultState(); save(st); return st; }
+  }
+  function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+
+  let state = load();
+
+  // ====== DATE HELPERS ======
+  function fmtDate(d){ return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit'}).format(d); }
+  function today(){ const n = new Date(); n.setHours(0,0,0,0); return n; }
+  function parseYMD(s){ const [y,m,d]=s.split('-').map(Number); const dt=new Date(y,m-1,d); dt.setHours(0,0,0,0); return dt; }
+
+  // return index 0..29 for "hôm nay" relative to startDate (clamped)
+  function todayIndex(){
+    if(!state.meta.startDate) return 0;
+    const start = parseYMD(state.meta.startDate);
+    const diff = Math.floor((today()-start)/86400000);
+    return Math.min(DAYS-1, Math.max(0, diff));
+  }
+  function isLocked(dayIdx){
+    if(!state.meta.startDate) return false; // nếu chưa chọn startDate, cho phép thao tác
+    return dayIdx > todayIndex(); // tương lai
+  }
+
+  // ====== RENDER HELPERS ======
+  function totalOf(id){ return state.days.reduce((a,d)=>a+(d[id]?1:0),0); }
+  function streakOf(id){
+    // count consecutive true up to "todayIndex"
+    const t = state.meta.startDate ? todayIndex() : DAYS-1;
+    let cnt = 0;
+    for(let i=t; i>=0; i--){
+      if(state.days[i][id]) cnt++;
+      else break;
     }
-    function persist(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+    return cnt;
+  }
 
-    let state = initState();
+  const todayEl = document.getElementById('today');
+  todayEl.textContent = "Hôm nay: " + new Intl.DateTimeFormat('vi-VN',{weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'}).format(new Date());
 
-    // ====== DATE / TODAY ======
-    const now = new Date();
-    const dayIndex = 0 + Math.min(DAYS-1, Math.floor((now - new Date(now.getFullYear(), now.getMonth(), now.getDate()))/86400000)); // 0 today start-of-day trick (always 0)
-    // We simply treat "Ngày 1..30" as slots; Check-in hôm nay = slot theo ngày thực của tháng nếu muốn:
-    const todayStr = new Intl.DateTimeFormat('vi-VN',{weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'}).format(now);
-    document.getElementById('today').textContent = `Hôm nay: ${todayStr}`;
+  // Theme
+  function applyTheme(){
+    const theme = state.meta.theme || "dark";
+    document.documentElement.setAttribute("data-theme", theme==="light"?"light":"dark");
+  }
+  function toggleTheme(){
+    state.meta.theme = state.meta.theme==="light" ? "dark" : "light";
+    save(state); applyTheme();
+  }
+  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+  applyTheme();
 
-    // ====== UI BUILDERS ======
-    const lbEl = document.getElementById('leaderboard');
-    const tableEl = document.getElementById('daysTable');
-    const prWrap = document.getElementById('progressWrap');
+  // Start date control
+  const startInput = document.getElementById('startDateInput');
+  if(state.meta.startDate) startInput.value = state.meta.startDate;
+  document.getElementById('saveStart').addEventListener('click', ()=>{
+    if(!startInput.value){ alert("Chọn ngày bắt đầu thử thách."); return; }
+    state.meta.startDate = startInput.value; save(state); refresh();
+  });
 
-    function totalOf(id){
-      return state.days.reduce((a,d)=>a+(d[id]?1:0),0);
-    }
+  // ====== UI NODES ======
+  const lbEl = document.getElementById('leaderboard');
+  const tableEl = document.getElementById('daysTable');
+  const prWrap = document.getElementById('progressWrap');
 
-    function buildLeaderboard(){
-      lbEl.innerHTML = "";
-      const rows = members
-        .map(m => ({...m, total: totalOf(m.id)}))
-        .sort((a,b)=>b.total - a.total);
-
-      rows.forEach((m,idx)=>{
-        const r = document.createElement('div'); r.className="row";
-        const medal = document.createElement('div'); medal.className="medal";
-        medal.style.background = idx===0?"#f59e0b":idx===1?"#9ca3af":"#b45309";
-        medal.textContent = idx+1;
-        const name = document.createElement('div'); name.className="name"; name.innerHTML = `<span style="color:${m.color};font-weight:700">${m.name}</span>`;
-        const bar = document.createElement('div'); bar.className="bar";
-        const span = document.createElement('span'); span.style.width = (m.total/DAYS*100)+"%"; span.style.background = m.color; bar.appendChild(span);
-        const cnt = document.createElement('div'); cnt.className="cnt"; cnt.textContent = `${m.total}/${DAYS} ngày`;
-        r.append(medal,name,bar,cnt); lbEl.appendChild(r);
-      });
-    }
-
-    // Progress bars (right column)
-    function buildProgress(){
-      prWrap.innerHTML="";
-      members.forEach(m=>{
-        const total = totalOf(m.id);
-        const box = document.createElement('div'); box.className="row"; box.style.background="#0e1630";
-        const label = document.createElement('div'); label.innerHTML = `<b style="color:${m.color}">${m.name}</b> • <span class="muted">${Math.round(total/DAYS*100)}%</span>`;
-        const bar = document.createElement('div'); bar.className="bar";
-        const span = document.createElement('span'); span.style.width=(total/DAYS*100)+"%"; span.style.background=m.color; bar.appendChild(span);
-        box.append(label,bar);
-        prWrap.appendChild(box);
-      });
-    }
-
-    // Table 30 days
-    function buildTable(){
-      const thead = document.createElement('thead');
-      const trh = document.createElement('tr');
-      trh.innerHTML = `<th>Ngày</th>` + members.map(m=>`<th style="color:${m.color}">${m.name}</th>`).join("");
-      thead.appendChild(trh);
-
-      const tbody = document.createElement('tbody');
-      for(let d=0; d<DAYS; d++){
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><b>Ngày ${d+1}</b></td>`;
-        members.forEach(m=>{
-          const td = document.createElement('td');
-          td.className = "daycell" + (state.days[d][m.id]?" done":"");
-          td.dataset.day = d; td.dataset.id = m.id;
-          td.style.position="relative";
-          td.innerHTML = state.days[d][m.id] ? `✅` : `<span style="opacity:.4">—</span>`;
-          td.onclick = () => toggleCell(d, m.id);
-          tbody.appendChild(tr).appendChild(td);
-        });
-      }
-      tableEl.innerHTML="";
-      tableEl.append(thead, tbody);
-    }
-
-    function toggleCell(day, id){
-      state.days[day][id] = !state.days[day][id];
-      persist(state);
-      refresh();
-    }
-
-    // ====== CHART ======
-    let chart;
-    function buildChart(){
-      const ctx = document.getElementById('barChart');
-      const totals = members.map(m=>totalOf(m.id));
-      const colors = members.map(m=>getComputedStyle(document.documentElement).getPropertyValue(m.color.replace('var(','').replace(')','')).trim());
-      if(chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type:'bar',
-        data:{
-          labels: members.map(m=>m.name),
-          datasets:[{ label:'Số ngày đã ✅', data: totals, backgroundColor: [ 'var(--pink)','var(--blue)','var(--green)' ]}]
-        },
-        options:{
-          responsive:true,
-          plugins:{
-            legend:{display:false},
-            tooltip:{
-              callbacks:{ label:(c)=>`${c.parsed.y}/${DAYS} ngày` }
-            }
-          },
-          scales:{
-            y:{beginAtZero:true, suggestedMax:30, ticks:{color:'#cbd5e1'}, grid:{color:'#233152'}},
-            x:{ticks:{color:'#cbd5e1'}, grid:{display:false}}
-          }
-        }
-      });
-    }
-
-    // ====== ACTIONS ======
-    function checkin(id){
-      // auto map "hôm nay" vào slot theo ngày trong thử thách:
-      // Nếu muốn khóa tương lai: chỉ cho phép <= ngày hiện tại trong tháng – tùy nhu cầu.
-      const d = todayChallengeIndex();
-      state.days[d][id] = true;
-      persist(state);
-      refresh();
-      blinkTodayCell(d, id);
-    }
-
-    // Day index of challenge based on today's date (1..30 mapped to 0..29)
-    function todayChallengeIndex(){
-      const dayOfMonth = new Date().getDate();
-      return Math.min(DAYS-1, Math.max(0, dayOfMonth-1));
-    }
-
-    function blinkTodayCell(d,id){
-      const cells = tableEl.querySelectorAll(`td.daycell[data-day="${d}"][data-id="${id}"]`);
-      cells.forEach(c=>{
-        c.animate([{outline:'2px solid #fff', offset:0},{outline:'0px solid transparent', offset:1}],{duration:600,easing:'ease-out'});
-      });
-    }
-
-    function resetAll(){
-      if(!confirm("Xóa toàn bộ dữ liệu 30 ngày?")) return;
-      state = {days: Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false}))};
-      persist(state);
-      refresh();
-    }
-
-    function exportData(){
-      const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = '30days-data.json'; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    document.getElementById('importFile').addEventListener('change', (e)=>{
-      const file = e.target.files[0]; if(!file) return;
-      const rd = new FileReader();
-      rd.onload = () => {
-        try{
-          const obj = JSON.parse(rd.result);
-          if(!obj.days || obj.days.length !== DAYS) throw new Error();
-          state = obj; persist(state); refresh();
-        }catch(_){ alert("Tệp không hợp lệ."); }
-      };
-      rd.readAsText(file);
-      e.target.value = "";
+  function buildLeaderboard(){
+    lbEl.innerHTML = "";
+    const rows = members.map(m=>({...m,total:totalOf(m.id), streak:streakOf(m.id)}))
+                        .sort((a,b)=> b.total - a.total || b.streak - a.streak);
+    rows.forEach((m,idx)=>{
+      const r = document.createElement('div'); r.className="row";
+      const medal = document.createElement('div'); medal.className="medal";
+      medal.style.background = idx===0?"#f59e0b":idx===1?"#9ca3af":"#b45309";
+      medal.textContent = idx+1;
+      const name = document.createElement('div'); name.className="name";
+      name.innerHTML = `<span style="color:${m.color};font-weight:700">${m.name}</span>`;
+      const bar = document.createElement('div'); bar.className="bar";
+      const span = document.createElement('span'); span.style.width=(m.total/DAYS*100)+"%"; span.style.background=m.color; bar.appendChild(span);
+      const cnt = document.createElement('div'); cnt.className="cnt"; cnt.textContent = `${m.total}/${DAYS} ngày • 🔥 ${m.streak} streak`;
+      r.append(medal,name,bar,cnt); lbEl.appendChild(r);
     });
+  }
 
-    function refresh(){
-      buildLeaderboard();
-      buildProgress();
-      buildTable();
-      buildChart();
-      // highlight today's column header
-      const idx = todayChallengeIndex();
-      const header = tableEl.querySelector('tbody tr:nth-child('+(idx+1)+') td:first-child');
-      if(header){ header.style.background="#13203a"; header.style.fontWeight="700"; }
+  function buildProgress(){
+    prWrap.innerHTML="";
+    members.forEach(m=>{
+      const total = totalOf(m.id);
+      const box = document.createElement('div'); box.className="row";
+      const label = document.createElement('div'); label.innerHTML = `<b style="color:${m.color}">${m.name}</b> • ${Math.round(total/DAYS*100)}%`;
+      const bar = document.createElement('div'); bar.className="bar";
+      const span = document.createElement('span'); span.style.width=(total/DAYS*100)+"%"; span.style.background=m.color; bar.appendChild(span);
+      box.append(label,bar); prWrap.appendChild(box);
+    });
+  }
+
+  function buildTable(){
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    trh.innerHTML = `<th class="sticky-head">Ngày</th>` + members.map(m=>`<th style="color:${m.color}">${m.name}</th>`).join("");
+    thead.appendChild(trh);
+
+    const tbody = document.createElement('tbody');
+    for(let d=0; d<DAYS; d++){
+      const tr = document.createElement('tr');
+      // label hiển thị ngày dương lịch nếu có startDate
+      let label = `Ngày ${d+1}`;
+      if(state.meta.startDate){
+        const start = parseYMD(state.meta.startDate);
+        const dd = new Date(start.getTime()+d*86400000);
+        label += ` (${fmtDate(dd)})`;
+      }
+      tr.innerHTML = `<td><b>${label}</b></td>`;
+
+      members.forEach(m=>{
+        const td = document.createElement('td');
+        td.className = "daycell";
+        if(state.days[d][m.id]) td.classList.add("done");
+        if(isLocked(d)) td.classList.add("lock");
+
+        td.dataset.day=d; td.dataset.id=m.id;
+        td.title = label + " • " + m.name;
+        td.style.position="relative";
+        td.innerHTML = state.days[d][m.id] ? `✅` : `<span style="opacity:.4">—</span>`;
+        td.onclick = () => {
+          if(isLocked(d)) return;
+          toggleCell(d, m.id);
+        };
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
     }
 
-    // ====== INIT ======
-    refresh();
-  </script>
+    tableEl.innerHTML=""; tableEl.append(thead, tbody);
+
+    // highlight row today
+    if(state.meta.startDate){
+      const idx = todayIndex();
+      const row = tableEl.querySelector(`tbody tr:nth-child(${idx+1}) td:first-child`);
+      if(row){ row.style.background="color-mix(in oklab, var(--accent), transparent 75%)"; row.style.fontWeight="700"; }
+    }
+  }
+
+  let chart;
+  function buildChart(){
+    const ctx = document.getElementById('barChart');
+    const totals = members.map(m=>totalOf(m.id));
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels: members.map(m=>m.name),
+        datasets:[{ label:'Số ngày đã ✅', data: totals, backgroundColor:[ 'var(--pink)','var(--blue)','var(--green)']}]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>`${c.parsed.y}/${DAYS} ngày` } } },
+        scales:{
+          y:{beginAtZero:true, suggestedMax:30, ticks:{color:'currentColor'}, grid:{color:'rgba(100,116,139,.25)'}},
+          x:{ticks:{color:'currentColor'}, grid:{display:false}}
+        }
+      }
+    });
+  }
+
+  // ====== ACTIONS ======
+  function toggleCell(day, id){
+    state.days[day][id] = !state.days[day][id];
+    save(state); refresh();
+  }
+
+  function checkin(id){
+    const d = state.meta.startDate ? todayIndex() : 0;
+    if(isLocked(d)) return;
+    state.days[d][id] = true;
+    save(state); refresh();
+    const cells = tableEl.querySelectorAll(`td.daycell[data-day="${d}"][data-id="${id}"]`);
+    cells.forEach(c=>c.animate([{outline:'2px solid #fff'},{outline:'0'}],{duration:500}));
+  }
+
+  function resetAll(){
+    if(!confirm("Xoá toàn bộ dữ liệu 30 ngày & giữ nguyên ngày bắt đầu?")) return;
+    state.days = Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false}));
+    save(state); refresh();
+  }
+
+  function exportData(){
+    const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='30days-data.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); if(!obj.days||obj.days.length!==DAYS) throw 0; state=obj; save(state); refresh(); }catch{ alert("Tệp không hợp lệ."); } };
+    rd.readAsText(f); e.target.value="";
+  });
+
+  function refresh(){
+    buildLeaderboard();
+    buildProgress();
+    buildTable();
+    buildChart();
+  }
+
+  // INIT
+  refresh();
+</script>
 </body>
 </html>
-
