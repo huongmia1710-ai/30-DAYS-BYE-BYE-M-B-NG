@@ -19,13 +19,15 @@
         background:linear-gradient(135deg,#fff0f6 0%,#fff 45%,#fff5f0 100%);
         box-shadow:0 12px 28px rgba(255,168,186,.20);}
   .hero h1{margin:0;font-size:30px}
+  .subtitle{margin-top:6px;color:var(--muted);font-size:16px}
   .toast{position:fixed;right:16px;bottom:16px;background:#fff;
         border:1px solid var(--border);padding:12px 14px;border-radius:12px;
-        box-shadow:0 12px 30px rgba(0,0,0,.12);display:none}
+        box-shadow:0 12px 30px rgba(0,0,0,.12);display:none;font-weight:600}
   .toast.show{display:block;animation:fade .18s ease-out}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   canvas#confetti{position:fixed;inset:0;pointer-events:none}
-  /* ... giữ nguyên style cũ (leaderboard, table, button, vv.) ... */
+  td{padding:8px 12px;border:1px solid #eee;cursor:pointer}
+  td.daycell.done{background:#ffeef3}
 </style>
 </head>
 <body>
@@ -34,19 +36,20 @@
 <div class="wrap">
   <div class="hero">
     <h1>30 NGÀY BYE BYE MỠ BỤNG</h1>
-    <div class="subtitle">Tick để check-in, bạn sẽ thấy hoa tung bay 🎉 kèm lời động viên: <b>Cố lên!!</b></div>
+    <div class="subtitle">Đừng chờ động lực mới bắt đầu. Hãy bắt đầu để tạo ra động lực. 🌸</div>
   </div>
 
-  <!-- các phần còn lại giữ nguyên: chọn ngày bắt đầu, leaderboard, bảng 30 ngày ... -->
-  <div id="leaderboard"></div>
-  <table id="daysTable"></table>
+  <!-- Bảng 30 ngày -->
+  <div style="margin-top:20px">
+    <table id="daysTable"></table>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-/* ================== STATE DEMO ================== */
-const KEY="30days-v9";const DAYS=30;
+/* ================== STATE ================== */
+const KEY="30days-v11";const DAYS=30;
 const members=[{id:"Huong",name:"Hương"},{id:"Thuy",name:"Thùy"},{id:"Lien",name:"Liên"}];
 let state={days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false}))};
 function save(){localStorage.setItem(KEY,JSON.stringify(state));}
@@ -61,40 +64,72 @@ sizeCanvas();addEventListener('resize',sizeCanvas);
 let particles=[];
 function burst(x,y,emoji="🌸"){
   for(let i=0;i<25;i++){
-    particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,size:18+Math.random()*10});
+    particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,
+      rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,
+      size:18+Math.random()*10});
   }
 }
 (function tick(){cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
   particles.forEach(p=>{p.life--;p.x+=p.vx;p.vy+=0.18;p.y+=p.vy;p.rot+=p.spin;
-    cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);cctx.font=p.size+"px serif";cctx.fillText(p.emoji,0,0);cctx.restore();});
+    cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);
+    cctx.font=p.size+"px serif";cctx.fillText(p.emoji,0,0);cctx.restore();});
   particles=particles.filter(p=>p.life>0);requestAnimationFrame(tick);
 })();
 
 /* ================== TOAST ================== */
 const toastEl=document.getElementById('toast');
-function toast(msg,ms=2000){toastEl.textContent=msg;toastEl.classList.add('show');
- setTimeout(()=>toastEl.classList.remove('show'),ms);}
+function toast(msg,ms=2000){
+  toastEl.textContent=msg;
+  toastEl.classList.add('show');
+  setTimeout(()=>toastEl.classList.remove('show'),ms);
+}
+
+/* ================== MOTIVATION ================== */
+const MOTIVATION = [
+  "Cố lên!!! 💪",
+  "Tuyệt vời, bạn làm được rồi! 🌟",
+  "Giữ vững phong độ nhé! 🔥",
+  "Mỗi ngày một bước nhỏ, bạn đang tiến bộ! 🚀",
+  "Bạn mạnh mẽ hơn bạn nghĩ! 💖"
+];
+function randomMsg(){return MOTIVATION[Math.floor(Math.random()*MOTIVATION.length)];}
+
+/* ================== SOUND ================== */
+function playDing(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.type="sine"; osc.frequency.value=880;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.18);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime+0.2);
+  }catch(e){console.warn("Sound error",e);}
+}
 
 /* ================== CHECKIN ================== */
 function doToggle(day,id){
   state.days[day][id]=!state.days[day][id];
   save();
   burst(innerWidth/2, innerHeight/3,"🌸");
-  toast("Cố lên!!");
+  playDing();
+  toast(randomMsg());
   render();
 }
 
-/* ================== RENDER SIMPLE DEMO ================== */
+/* ================== RENDER ================== */
 const tableEl=document.getElementById('daysTable');
 function render(){
   const tbody=document.createElement('tbody');
   for(let d=0;d<DAYS;d++){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>Ngày ${d+1}</td>`;
+    tr.innerHTML=`<td><b>Ngày ${d+1}</b></td>`;
     members.forEach(m=>{
       const td=document.createElement('td');
       td.textContent=state.days[d][m.id]?"✅":"—";
-      td.className="daycell";td.onclick=()=>doToggle(d,m.id);
+      td.className="daycell"+(state.days[d][m.id]?" done":"");
+      td.onclick=()=>doToggle(d,m.id);
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
