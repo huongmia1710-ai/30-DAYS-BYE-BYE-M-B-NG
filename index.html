@@ -39,9 +39,39 @@
     <div class="subtitle">Đừng chờ động lực mới bắt đầu. Hãy bắt đầu để tạo ra động lực. 🌸</div>
   </div>
 
+  <!-- Chọn ngày bắt đầu -->
+  <div style="margin-top:20px">
+    <label>Chọn thành viên:</label>
+    <select id="whoSelect">
+      <option value="Huong">Hương</option>
+      <option value="Thuy">Thùy</option>
+      <option value="Lien">Liên</option>
+    </select>
+    <label>Ngày bắt đầu:</label>
+    <input type="date" id="startDateInput"/>
+    <button onclick="saveStart()">Lưu ngày bắt đầu</button>
+    <div id="startSummary"></div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div style="margin-top:20px" id="leaderboard"></div>
+
+  <!-- Biểu đồ -->
+  <div style="margin:20px 0">
+    <canvas id="barChart" height="180"></canvas>
+  </div>
+
   <!-- Bảng 30 ngày -->
   <div style="margin-top:20px">
     <table id="daysTable"></table>
+  </div>
+
+  <!-- Export / Import -->
+  <div style="margin-top:20px">
+    <button onclick="exportData()">⬇️ Xuất JSON</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)"/>
+    <button onclick="document.getElementById('importFile').click()">⬆️ Nhập JSON</button>
+    <button onclick="resetAll()">🔁 Reset toàn bộ</button>
   </div>
 </div>
 
@@ -49,9 +79,21 @@
 
 <script>
 /* ================== STATE ================== */
-const KEY="30days-v11";const DAYS=30;
-const members=[{id:"Huong",name:"Hương"},{id:"Thuy",name:"Thùy"},{id:"Lien",name:"Liên"}];
-let state={days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false}))};
+const KEY="30days-full-v2";const DAYS=30;
+const members=[
+  {id:"Huong",name:"Hương",color:"var(--col-huong)"},
+  {id:"Thuy",name:"Thùy",color:"var(--col-thuy)"},
+  {id:"Lien",name:"Liên",color:"var(--col-lien)"}
+];
+function defaultState(){
+  return {
+    days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
+    journal:Array.from({length:DAYS},()=>({Huong:null,Thuy:null,Lien:null})),
+    startDate:{Huong:null,Thuy:null,Lien:null},
+    milestone:{Huong:{},Thuy:{},Lien:{}}
+  };
+}
+let state=defaultState();
 function save(){localStorage.setItem(KEY,JSON.stringify(state));}
 function load(){const raw=localStorage.getItem(KEY);if(raw)state=JSON.parse(raw);}
 load();
@@ -76,66 +118,50 @@ function burst(x,y,emoji="🌸"){
   particles=particles.filter(p=>p.life>0);requestAnimationFrame(tick);
 })();
 
-/* ================== TOAST ================== */
+/* ================== TOAST + DING ================== */
 const toastEl=document.getElementById('toast');
-function toast(msg,ms=2000){
-  toastEl.textContent=msg;
-  toastEl.classList.add('show');
-  setTimeout(()=>toastEl.classList.remove('show'),ms);
-}
+function toast(msg,ms=2000){toastEl.textContent=msg;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),ms);}
+function playDing(){try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(0.0001, ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.18);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+0.2);}catch{}}
 
-/* ================== MOTIVATION ================== */
-const MOTIVATION = [
-  "Cố lên!!! 💪",
-  "Tuyệt vời, bạn làm được rồi! 🌟",
-  "Giữ vững phong độ nhé! 🔥",
-  "Mỗi ngày một bước nhỏ, bạn đang tiến bộ! 🚀",
-  "Bạn mạnh mẽ hơn bạn nghĩ! 💖"
-];
+/* ================== MESSAGES ================== */
+const MOTIVATION=["Cố lên!!! 💪","Tuyệt vời, bạn làm được rồi! 🌟","Giữ vững phong độ nhé! 🔥","Mỗi ngày một bước nhỏ, bạn đang tiến bộ! 🚀","Bạn mạnh mẽ hơn bạn nghĩ! 💖"];
 function randomMsg(){return MOTIVATION[Math.floor(Math.random()*MOTIVATION.length)];}
-
-/* ================== SOUND ================== */
-function playDing(){
-  try{
-    const ctx=new (window.AudioContext||window.webkitAudioContext)();
-    const osc=ctx.createOscillator(), gain=ctx.createGain();
-    osc.type="sine"; osc.frequency.value=880;
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.18);
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime+0.2);
-  }catch(e){console.warn("Sound error",e);}
-}
 
 /* ================== CHECKIN ================== */
 function doToggle(day,id){
   state.days[day][id]=!state.days[day][id];
-  save();
-  burst(innerWidth/2, innerHeight/3,"🌸");
-  playDing();
-  toast(randomMsg());
-  render();
+  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();toast(randomMsg());
+  checkMilestones(id);render();
 }
+
+/* ================== START DATE ================== */
+function saveStart(){const who=document.getElementById('whoSelect').value;const date=document.getElementById('startDateInput').value;if(!date){toast("Chọn ngày!");return;}state.startDate[who]=date;save();render();}
+function buildStartSummary(){let html="";members.forEach(m=>{html+=`<div>${m.name}: ${state.startDate[m.id]||"—"}</div>`});document.getElementById('startSummary').innerHTML=html;}
+
+/* ================== LEADERBOARD ================== */
+function totalOf(id){return state.days.reduce((a,d)=>a+(d[id]?1:0),0);}
+function streakOf(id){let s=0;for(let i=DAYS-1;i>=0;i--){if(state.days[i][id])s++;else if(s>0)break;}return s;}
+function buildLeaderboard(){let html="<h2>🏆 Leaderboard</h2>";members.forEach(m=>{html+=`<div><b style="color:${m.color}">${m.name}</b>: ${totalOf(m.id)}/${DAYS} • 🔥${streakOf(m.id)}</div>`});document.getElementById('leaderboard').innerHTML=html;}
+
+/* ================== MILESTONES ================== */
+const QUOTES=["Kỷ luật đưa bạn tới nơi động lực không thể.","Mỗi ngày một bước nhỏ, 30 ngày một bước ngoặt.","Bạn không cần nhanh – chỉ cần kiên trì.","Cơ thể là nhật ký của thói quen. Hãy viết điều bạn tự hào!"];
+function checkMilestones(id){const t=totalOf(id);[7,15,30].forEach(m=>{if(t===m&&!state.milestone[id][m]){state.milestone[id][m]=true;save();toast(`${id} đạt mốc ${m} ngày! ${QUOTES[Math.floor(Math.random()*QUOTES.length)]}`,4000);burst(innerWidth/2,innerHeight/3,"✨");}});}
+
+/* ================== JOURNAL (simple demo) ================== */
+function openJournal(day,id){const note=prompt(`Nhật ký của ${id} - Ngày ${day+1}`,state.journal[day][id]?.note||"");if(note!==null){state.journal[day][id]={note};save();}}
+
+/* ================== CHART ================== */
+let chart;
+function buildChart(){const ctx=document.getElementById('barChart');const totals=members.map(m=>totalOf(m.id));if(chart)chart.destroy();chart=new Chart(ctx,{type:'bar',data:{labels:members.map(m=>m.name),datasets:[{data:totals,backgroundColor:['#ff8fab','#a5b4fc','#9adbb3']}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,suggestedMax:30}}}});}
+
+/* ================== EXPORT / IMPORT ================== */
+function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="30days.json";a.click();URL.revokeObjectURL(url);}
+function importData(e){const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{state=JSON.parse(rd.result);save();render();}catch{alert("File lỗi")}};rd.readAsText(f);}
+function resetAll(){if(confirm("Xóa toàn bộ dữ liệu?")){state=defaultState();save();render();}}
 
 /* ================== RENDER ================== */
 const tableEl=document.getElementById('daysTable');
-function render(){
-  const tbody=document.createElement('tbody');
-  for(let d=0;d<DAYS;d++){
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><b>Ngày ${d+1}</b></td>`;
-    members.forEach(m=>{
-      const td=document.createElement('td');
-      td.textContent=state.days[d][m.id]?"✅":"—";
-      td.className="daycell"+(state.days[d][m.id]?" done":"");
-      td.onclick=()=>doToggle(d,m.id);
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  }
-  tableEl.innerHTML="";tableEl.appendChild(tbody);
-}
+function render(){buildStartSummary();buildLeaderboard();buildChart();const tbody=document.createElement('tbody');for(let d=0;d<DAYS;d++){const tr=document.createElement('tr');tr.innerHTML=`<td><b>Ngày ${d+1}</b></td>`;members.forEach(m=>{const td=document.createElement('td');td.textContent=state.days[d][m.id]?"✅":"—";td.className="daycell"+(state.days[d][m.id]?" done":"");td.onclick=()=>doToggle(d,m.id);td.ondblclick=()=>openJournal(d,m.id);tr.appendChild(td);});tbody.appendChild(tr);}tableEl.innerHTML="";tableEl.appendChild(tbody);}
 render();
 </script>
 </body>
