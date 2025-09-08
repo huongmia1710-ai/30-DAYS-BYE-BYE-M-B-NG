@@ -65,7 +65,7 @@
     <div class="row" style="margin-top:10px">
       <input id="newMemberName" placeholder="Tên thành viên mới" />
       <button id="addMemberBtn">➕ Thêm thành viên</button>
-      <span class="small">Thêm/đổi tên sẽ tự cập nhật chọn ngày, bảng tick, chart, leaderboard, journal.</span>
+      <span class="small">Thêm/đổi tên/xoá sẽ tự cập nhật chọn ngày, bảng tick, chart, leaderboard, journal.</span>
     </div>
   </div>
 
@@ -255,7 +255,7 @@ function doToggle(day,id){
   renderLeaderboard(); renderChart(); renderTable();
 }
 
-/* ================== MEMBER MGMT (ADD / EDIT) ================== */
+/* ================== MEMBER MGMT (ADD / EDIT / DELETE) ================== */
 function renderMemberChips(){
   const box=document.getElementById('memberChips');
   box.innerHTML="";
@@ -266,6 +266,7 @@ function renderMemberChips(){
       <span class="colordot" style="background:${m.color}"></span>
       <span class="name">${m.name}</span>
       <button title="Đổi tên" aria-label="edit" onclick="editMember('${m.id}')">✎</button>
+      <button title="Xoá" aria-label="delete" onclick="deleteMember('${m.id}')">🗑️</button>
     `;
     box.appendChild(chip);
   });
@@ -280,23 +281,37 @@ function editMember(id){
   renderMemberChips(); renderStartControls(); renderLeaderboard(); renderChart(); renderTable();
   toast("Đã đổi tên ✅");
 }
-function addMember(){
-  const input=document.getElementById('newMemberName');
-  const name=(input.value||"").trim();
-  if(!name) return toast("Nhập tên thành viên!");
-  let baseId=slugify(name), id=baseId, i=1;
-  while(state.members.some(m=>m.id===id)) id=baseId+(++i);
-  const color=COLOR_POOL[state.members.length % COLOR_POOL.length];
+function deleteMember(id){
+  const mem=state.members.find(x=>x.id===id);
+  if(!mem) return;
+  if(state.members.length<=1){
+    return toast("Cần ít nhất 1 thành viên.");
+  }
+  const ok = confirm(`Xoá ${mem.name}? Mọi dữ liệu liên quan sẽ bị xoá.`);
+  if(!ok) return;
 
-  state.members.push({id,name,color});
-  for(let d=0; d<DAYS; d++){ state.days[d][id]=false; }
-  state.startDate[id]=null;
-  state.milestone[id]={};
+  // 1) Xoá khỏi danh sách members
+  state.members = state.members.filter(m=>m.id!==id);
 
+  // 2) Xoá cột trong days
+  for(let d=0; d<DAYS; d++){
+    if(id in state.days[d]) delete state.days[d][id];
+  }
+
+  // 3) Xoá startDate & milestone
+  if(id in state.startDate) delete state.startDate[id];
+  if(id in state.milestone) delete state.milestone[id];
+
+  // 4) Xoá mọi journal của id
+  Object.keys(state.journal).forEach(k=>{
+    if(k.startsWith(id+"_")) delete state.journal[k];
+  });
+
+  // 5) Lưu & render
   save();
-  input.value="";
-  renderMemberChips(); renderStartControls(); renderLeaderboard(); renderChart(); renderTable();
-  toast("Đã thêm thành viên mới 🎉");
+  renderMemberChips(); renderStartControls(); renderStartSummary();
+  renderLeaderboard(); renderChart(); renderTable();
+  toast("Đã xoá thành viên 🗑️");
 }
 
 /* ================== RENDER ================== */
@@ -399,7 +414,9 @@ function renderAll(){
 }
 
 /* ================== EVENTS ================== */
-document.getElementById('addMemberBtn').onclick=addMember;
+document.getElementById('addMemberBtn').onclick=()=>{
+  addMember();
+};
 document.getElementById('saveStartBtn').onclick=saveStart;
 
 /* ================== BOOT ================== */
