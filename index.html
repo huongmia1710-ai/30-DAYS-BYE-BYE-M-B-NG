@@ -27,8 +27,16 @@
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   canvas#confetti{position:fixed;inset:0;pointer-events:none}
   table{border-collapse:collapse;margin-top:16px;width:100%}
-  th,td{padding:8px 12px;border:1px solid #eee;text-align:center}
+  th,td{padding:8px 12px;border:1px solid #eee;text-align:center;position:relative}
   td.daycell.done{background:#ffeef3}
+  .tooltip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+           background:#333;color:#fff;padding:6px 8px;border-radius:6px;
+           white-space:pre-line;font-size:12px;display:none;z-index:10}
+  td:hover .tooltip{display:block}
+  #journalModal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;
+                align-items:center;justify-content:center;z-index:100}
+  #journalForm{background:#fff;padding:20px;border-radius:12px;max-width:400px;width:90%}
+  #journalForm input,#journalForm textarea{width:100%;margin:6px 0;padding:8px;border:1px solid #ccc;border-radius:6px}
 </style>
 </head>
 <body>
@@ -38,20 +46,6 @@
   <div class="hero">
     <h1>30 NGÀY BYE BYE MỠ BỤNG</h1>
     <div class="subtitle">Đừng chờ động lực mới bắt đầu. Hãy bắt đầu để tạo ra động lực. 🌸</div>
-  </div>
-
-  <!-- Chọn ngày bắt đầu -->
-  <div style="margin-top:20px">
-    <label>Thành viên:</label>
-    <select id="whoSelect">
-      <option value="Huong">Hương</option>
-      <option value="Thuy">Thùy</option>
-      <option value="Lien">Liên</option>
-    </select>
-    <label>Ngày bắt đầu:</label>
-    <input type="date" id="startDateInput"/>
-    <button onclick="saveStart()">Lưu ngày bắt đầu</button>
-    <div id="startSummary" style="margin-top:8px"></div>
   </div>
 
   <!-- Leaderboard -->
@@ -69,6 +63,18 @@
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- Modal nhập nhật ký -->
+<div id="journalModal">
+  <form id="journalForm" onsubmit="saveJournal(event)">
+    <h3>Nhật ký ngày <span id="journalDay"></span> - <span id="journalWho"></span></h3>
+    <input type="number" id="weightInput" placeholder="Cân nặng (kg)" step="0.1"/>
+    <input type="number" id="waistInput" placeholder="Vòng eo (cm)" step="0.1"/>
+    <textarea id="noteInput" rows="3" placeholder="Tình trạng sức khoẻ / ghi chú"></textarea>
+    <button type="submit">Lưu</button>
+    <button type="button" onclick="closeJournal()">Đóng</button>
+  </form>
+</div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -100,7 +106,7 @@ const members=[
 function defaultState(){
   return {
     days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
-    startDate:{Huong:null,Thuy:null,Lien:null}
+    journal:{}
   };
 }
 let state=defaultState();
@@ -120,34 +126,35 @@ function randomMsg(){return MOTIVATION[Math.floor(Math.random()*MOTIVATION.lengt
 function save(){docRef().set(state,{merge:true});}
 function subscribeRealtime(){docRef().onSnapshot(snap=>{if(snap.exists){state=Object.assign(defaultState(),snap.data());render();}else{docRef().set(state);}});}
 
+/* ================== JOURNAL ================== */
+let currentDay=null,currentWho=null;
+function openJournal(day,id){
+  currentDay=day; currentWho=id;
+  document.getElementById('journalDay').textContent=day+1;
+  document.getElementById('journalWho').textContent=members.find(m=>m.id==id).name;
+  const key=`${id}_${day}`;
+  const j=state.journal[key]||{};
+  document.getElementById('weightInput').value=j.weight||"";
+  document.getElementById('waistInput').value=j.waist||"";
+  document.getElementById('noteInput').value=j.note||"";
+  document.getElementById('journalModal').style.display="flex";
+}
+function closeJournal(){document.getElementById('journalModal').style.display="none";}
+function saveJournal(e){
+  e.preventDefault();
+  const key=`${currentWho}_${currentDay}`;
+  state.journal[key]={
+    weight:document.getElementById('weightInput').value,
+    waist:document.getElementById('waistInput').value,
+    note:document.getElementById('noteInput').value
+  };
+  save();closeJournal();render();toast("Đã lưu nhật ký 📒");
+}
+
 /* ================== APP LOGIC ================== */
-function saveStart(){
-  const who=document.getElementById('whoSelect').value;
-  const date=document.getElementById('startDateInput').value;
-  if(date){ state.startDate[who]=date; save(); render(); }
-}
-
-function getStreak(id){
-  let streak=0,maxStreak=0;
-  for(let d=0;d<DAYS;d++){
-    if(state.days[d][id]){streak++; if(streak>maxStreak)maxStreak=streak;}
-    else{streak=0;}
-  }
-  return maxStreak;
-}
-
 function doToggle(day,id){
-  // Không cho tick trước ngày bắt đầu
-  const start=state.startDate[id];
-  if(start){
-    const startIdx=Math.floor((new Date()-new Date(start))/(1000*60*60*24));
-    if(day>startIdx){ toast("Chưa tới ngày này!"); return; }
-  }
   state.days[day][id]=!state.days[day][id];
-  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();
-  const total=state.days.reduce((a,d)=>a+(d[id]?1:0),0);
-  if([7,15,30].includes(total)){ toast(`🎉 ${members.find(m=>m.id==id).name} đạt mốc ${total} ngày!`); burst(innerWidth/2, innerHeight/2,"🎉"); }
-  else{ toast(randomMsg()); }
+  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();toast(randomMsg());
   render();
 }
 
@@ -155,8 +162,7 @@ function buildLeaderboard(){
   let html="<h2>🏆 Leaderboard</h2>";
   members.forEach(m=>{
     const total=state.days.reduce((a,d)=>a+(d[m.id]?1:0),0);
-    const streak=getStreak(m.id);
-    html+=`<div><b style="color:${m.color}">${m.name}</b>: ${total}/${DAYS} ngày • 🔥 ${streak} streak</div>`;
+    html+=`<div><b style="color:${m.color}">${m.name}</b>: ${total}/${DAYS} ngày</div>`;
   });
   document.getElementById('leaderboard').innerHTML=html;
 }
@@ -171,13 +177,6 @@ function buildChart(){
 
 const tableEl=document.getElementById('daysTable');
 function render(){
-  // summary start dates
-  let sumHtml="";
-  members.forEach(m=>{
-    if(state.startDate[m.id]) sumHtml+=`${m.name}: bắt đầu ${state.startDate[m.id]}<br>`;
-  });
-  document.getElementById('startSummary').innerHTML=sumHtml;
-
   buildLeaderboard();
   buildChart();
   const thead=document.createElement('thead');
@@ -195,6 +194,14 @@ function render(){
       td.textContent=state.days[d][m.id]?"✅":"—";
       td.className="daycell"+(state.days[d][m.id]?" done":"");
       td.onclick=()=>doToggle(d,m.id);
+      td.ondblclick=()=>openJournal(d,m.id);
+      const key=`${m.id}_${d}`;
+      if(state.journal[key]){
+        const tip=document.createElement('div');
+        tip.className="tooltip";
+        tip.textContent=`⚖️ ${state.journal[key].weight||"-"}kg\n📏 ${state.journal[key].waist||"-"}cm\n📝 ${state.journal[key].note||""}`;
+        td.appendChild(tip);
+      }
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
