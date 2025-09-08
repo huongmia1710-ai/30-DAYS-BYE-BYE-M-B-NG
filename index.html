@@ -26,7 +26,8 @@
   .toast.show{display:block;animation:fade .18s ease-out}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   canvas#confetti{position:fixed;inset:0;pointer-events:none}
-  td{padding:8px 12px;border:1px solid #eee;cursor:pointer}
+  table{border-collapse:collapse;margin-top:16px;width:100%}
+  th,td{padding:8px 12px;border:1px solid #eee;text-align:center}
   td.daycell.done{background:#ffeef3}
 </style>
 </head>
@@ -37,20 +38,6 @@
   <div class="hero">
     <h1>30 NGÀY BYE BYE MỠ BỤNG</h1>
     <div class="subtitle">Đừng chờ động lực mới bắt đầu. Hãy bắt đầu để tạo ra động lực. 🌸</div>
-  </div>
-
-  <!-- Chọn ngày bắt đầu -->
-  <div style="margin-top:20px">
-    <label>Chọn thành viên:</label>
-    <select id="whoSelect">
-      <option value="Huong">Hương</option>
-      <option value="Thuy">Thùy</option>
-      <option value="Lien">Liên</option>
-    </select>
-    <label>Ngày bắt đầu:</label>
-    <input type="date" id="startDateInput"/>
-    <button onclick="saveStart()">Lưu ngày bắt đầu</button>
-    <div id="startSummary"></div>
   </div>
 
   <!-- Leaderboard -->
@@ -65,21 +52,52 @@
   <div style="margin-top:20px">
     <table id="daysTable"></table>
   </div>
-
-  <!-- Export / Import -->
-  <div style="margin-top:20px">
-    <button onclick="exportData()">⬇️ Xuất JSON</button>
-    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)"/>
-    <button onclick="document.getElementById('importFile').click()">⬆️ Nhập JSON</button>
-    <button onclick="resetAll()">🔁 Reset toàn bộ</button>
-  </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
 <script>
+/* ================== FIREBASE CONFIG ================== */
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyB9MISUTOozdHB5wQvQpNGARrCVM4qRIF0",
+  authDomain: "ngay-bye-bye-mo-bung.firebaseapp.com",
+  projectId: "ngay-bye-bye-mo-bung",
+  storageBucket: "ngay-bye-bye-mo-bung.firebasestorage.app",
+  messagingSenderId: "568512660319",
+  appId: "1:568512660319:web:4a67c1ecff02fa7998ecea",
+  measurementId: "G-7L70VSD55J"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const firebaseConfig = {
+  // apiKey: "AIzaSyD-xxx",
+  // authDomain: "xxx.firebaseapp.com",
+  // projectId: "xxx",
+  // storageBucket: "xxx.appspot.com",
+  // messagingSenderId: "xxx",
+  // appId: "xxx"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const ROOM_ID = "main"; 
+const docRef = () => db.collection("rooms").doc(ROOM_ID);
+
 /* ================== STATE ================== */
-const KEY="30days-full-v2";const DAYS=30;
+const DAYS=30;
 const members=[
   {id:"Huong",name:"Hương",color:"var(--col-huong)"},
   {id:"Thuy",name:"Thùy",color:"var(--col-thuy)"},
@@ -87,82 +105,58 @@ const members=[
 ];
 function defaultState(){
   return {
-    days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false})),
-    journal:Array.from({length:DAYS},()=>({Huong:null,Thuy:null,Lien:null})),
-    startDate:{Huong:null,Thuy:null,Lien:null},
-    milestone:{Huong:{},Thuy:{},Lien:{}}
+    days:Array.from({length:DAYS},()=>({Huong:false,Thuy:false,Lien:false}))
   };
 }
 let state=defaultState();
-function save(){localStorage.setItem(KEY,JSON.stringify(state));}
-function load(){const raw=localStorage.getItem(KEY);if(raw)state=JSON.parse(raw);}
-load();
 
-/* ================== CONFETTI ================== */
-const confettiCanvas=document.getElementById('confetti');
-const cctx=confettiCanvas.getContext('2d');
-function sizeCanvas(){confettiCanvas.width=innerWidth;confettiCanvas.height=innerHeight;}
-sizeCanvas();addEventListener('resize',sizeCanvas);
-let particles=[];
-function burst(x,y,emoji="🌸"){
-  for(let i=0;i<25;i++){
-    particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,
-      rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,
-      size:18+Math.random()*10});
-  }
-}
-(function tick(){cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-  particles.forEach(p=>{p.life--;p.x+=p.vx;p.vy+=0.18;p.y+=p.vy;p.rot+=p.spin;
-    cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);
-    cctx.font=p.size+"px serif";cctx.fillText(p.emoji,0,0);cctx.restore();});
-  particles=particles.filter(p=>p.life>0);requestAnimationFrame(tick);
-})();
-
-/* ================== TOAST + DING ================== */
+/* ================== TOOLS ================== */
 const toastEl=document.getElementById('toast');
 function toast(msg,ms=2000){toastEl.textContent=msg;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),ms);}
 function playDing(){try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(0.0001, ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.18);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+0.2);}catch{}}
-
-/* ================== MESSAGES ================== */
+function burst(x,y,emoji="🌸"){for(let i=0;i<25;i++){particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()*-6)-2,rot:Math.random()*6,life:60,emoji,spin:(Math.random()-0.5)*0.3,size:18+Math.random()*10});}}
+const confettiCanvas=document.getElementById('confetti');const cctx=confettiCanvas.getContext('2d');
+function sizeCanvas(){confettiCanvas.width=innerWidth;confettiCanvas.height=innerHeight;}sizeCanvas();addEventListener('resize',sizeCanvas);
+let particles=[];(function tick(){cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);particles.forEach(p=>{p.life--;p.x+=p.vx;p.vy+=0.18;p.y+=p.vy;p.rot+=p.spin;cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);cctx.font=p.size+"px serif";cctx.fillText(p.emoji,0,0);cctx.restore();});particles=particles.filter(p=>p.life>0);requestAnimationFrame(tick);})();
 const MOTIVATION=["Cố lên!!! 💪","Tuyệt vời, bạn làm được rồi! 🌟","Giữ vững phong độ nhé! 🔥","Mỗi ngày một bước nhỏ, bạn đang tiến bộ! 🚀","Bạn mạnh mẽ hơn bạn nghĩ! 💖"];
 function randomMsg(){return MOTIVATION[Math.floor(Math.random()*MOTIVATION.length)];}
 
-/* ================== CHECKIN ================== */
-function doToggle(day,id){
-  state.days[day][id]=!state.days[day][id];
-  save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();toast(randomMsg());
-  checkMilestones(id);render();
-}
+/* ================== FIRESTORE ================== */
+function save(){docRef().set(state,{merge:true});}
+function subscribeRealtime(){docRef().onSnapshot(snap=>{if(snap.exists){state=Object.assign(defaultState(),snap.data());render();}else{docRef().set(state);}});}
 
-/* ================== START DATE ================== */
-function saveStart(){const who=document.getElementById('whoSelect').value;const date=document.getElementById('startDateInput').value;if(!date){toast("Chọn ngày!");return;}state.startDate[who]=date;save();render();}
-function buildStartSummary(){let html="";members.forEach(m=>{html+=`<div>${m.name}: ${state.startDate[m.id]||"—"}</div>`});document.getElementById('startSummary').innerHTML=html;}
-
-/* ================== LEADERBOARD ================== */
-function totalOf(id){return state.days.reduce((a,d)=>a+(d[id]?1:0),0);}
-function streakOf(id){let s=0;for(let i=DAYS-1;i>=0;i--){if(state.days[i][id])s++;else if(s>0)break;}return s;}
-function buildLeaderboard(){let html="<h2>🏆 Leaderboard</h2>";members.forEach(m=>{html+=`<div><b style="color:${m.color}">${m.name}</b>: ${totalOf(m.id)}/${DAYS} • 🔥${streakOf(m.id)}</div>`});document.getElementById('leaderboard').innerHTML=html;}
-
-/* ================== MILESTONES ================== */
-const QUOTES=["Kỷ luật đưa bạn tới nơi động lực không thể.","Mỗi ngày một bước nhỏ, 30 ngày một bước ngoặt.","Bạn không cần nhanh – chỉ cần kiên trì.","Cơ thể là nhật ký của thói quen. Hãy viết điều bạn tự hào!"];
-function checkMilestones(id){const t=totalOf(id);[7,15,30].forEach(m=>{if(t===m&&!state.milestone[id][m]){state.milestone[id][m]=true;save();toast(`${id} đạt mốc ${m} ngày! ${QUOTES[Math.floor(Math.random()*QUOTES.length)]}`,4000);burst(innerWidth/2,innerHeight/3,"✨");}});}
-
-/* ================== JOURNAL (simple demo) ================== */
-function openJournal(day,id){const note=prompt(`Nhật ký của ${id} - Ngày ${day+1}`,state.journal[day][id]?.note||"");if(note!==null){state.journal[day][id]={note};save();}}
-
-/* ================== CHART ================== */
-let chart;
-function buildChart(){const ctx=document.getElementById('barChart');const totals=members.map(m=>totalOf(m.id));if(chart)chart.destroy();chart=new Chart(ctx,{type:'bar',data:{labels:members.map(m=>m.name),datasets:[{data:totals,backgroundColor:['#ff8fab','#a5b4fc','#9adbb3']}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,suggestedMax:30}}}});}
-
-/* ================== EXPORT / IMPORT ================== */
-function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="30days.json";a.click();URL.revokeObjectURL(url);}
-function importData(e){const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{state=JSON.parse(rd.result);save();render();}catch{alert("File lỗi")}};rd.readAsText(f);}
-function resetAll(){if(confirm("Xóa toàn bộ dữ liệu?")){state=defaultState();save();render();}}
-
-/* ================== RENDER ================== */
+/* ================== APP LOGIC ================== */
+function doToggle(day,id){state.days[day][id]=!state.days[day][id];save();burst(innerWidth/2, innerHeight/3,"🌸");playDing();toast(randomMsg());render();}
+function buildLeaderboard(){let html="<h2>🏆 Leaderboard</h2>";members.forEach(m=>{const total=state.days.reduce((a,d)=>a+(d[m.id]?1:0),0);html+=`<div><b style="color:${m.color}">${m.name}</b>: ${total}/${DAYS} ngày</div>`});document.getElementById('leaderboard').innerHTML=html;}
+let chart;function buildChart(){const ctx=document.getElementById('barChart');const totals=members.map(m=>state.days.reduce((a,d)=>a+(d[m.id]?1:0),0));if(chart)chart.destroy();chart=new Chart(ctx,{type:'bar',data:{labels:members.map(m=>m.name),datasets:[{data:totals,backgroundColor:['#ff8fab','#a5b4fc','#9adbb3']}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,suggestedMax:30}}}});}
 const tableEl=document.getElementById('daysTable');
-function render(){buildStartSummary();buildLeaderboard();buildChart();const tbody=document.createElement('tbody');for(let d=0;d<DAYS;d++){const tr=document.createElement('tr');tr.innerHTML=`<td><b>Ngày ${d+1}</b></td>`;members.forEach(m=>{const td=document.createElement('td');td.textContent=state.days[d][m.id]?"✅":"—";td.className="daycell"+(state.days[d][m.id]?" done":"");td.onclick=()=>doToggle(d,m.id);td.ondblclick=()=>openJournal(d,m.id);tr.appendChild(td);});tbody.appendChild(tr);}tableEl.innerHTML="";tableEl.appendChild(tbody);}
-render();
+function render(){
+  buildLeaderboard();
+  buildChart();
+  const thead=document.createElement('thead');
+  let headerRow=document.createElement('tr');
+  headerRow.innerHTML="<th>Ngày</th>";
+  members.forEach(m=>{headerRow.innerHTML+=`<th style="color:${m.color}">${m.name}</th>`;});
+  thead.appendChild(headerRow);
+
+  const tbody=document.createElement('tbody');
+  for(let d=0;d<DAYS;d++){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${d+1}</b></td>`;
+    members.forEach(m=>{
+      const td=document.createElement('td');
+      td.textContent=state.days[d][m.id]?"✅":"—";
+      td.className="daycell"+(state.days[d][m.id]?" done":"");
+      td.onclick=()=>doToggle(d,m.id);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+  tableEl.innerHTML="";
+  tableEl.appendChild(thead);
+  tableEl.appendChild(tbody);
+}
+subscribeRealtime();
 </script>
 </body>
 </html>
