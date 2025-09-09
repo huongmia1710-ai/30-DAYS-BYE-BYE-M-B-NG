@@ -1,65 +1,46 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>30 ngày bye bye mỡ bụng</title>
-  <link rel="icon" href="assets/favicon.png">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>30 NGÀY BYE BYE MỠ BỤNG</title>
+  <!-- base để mọi đường dẫn là tương đối -->
+  <base href="./">
+  <link rel="stylesheet" href="styles.css?v=20250909">
 </head>
 <body>
-  <div class="wrap">
-    <h1><span>30 ngày bye bye mỡ bụng</span></h1>
-    <div class="controls">
-      <div class="group">
-        <button id="btnLoadRepo" class="primary">📥 Nạp 9 ảnh từ repo</button>
-        <span class="hint">Cách bền vững: upload ảnh vào thư mục <code>assets/</code> của repo với tên <code>1.jpg</code>…<code>9.jpg</code>.</span>
-      </div>
-      <div class="group">
-        <label class="pill">Hoặc chọn 9 ảnh trên máy</label>
-        <input type="file" id="fileInput" accept="image/*" multiple aria-label="Chọn đúng 9 ảnh">
-        <span id="countHint" class="hint">0/9</span>
-        <button id="btnGuide" class="primary" disabled>📖 Hướng dẫn tập</button>
-      </div>
-      <div class="group">
-        <button id="btnPrev" disabled>⟵ Trước</button>
-        <button id="btnPlay" disabled>▶️ Phát</button>
-        <button id="btnPause" disabled>⏸️ Tạm dừng</button>
-        <button id="btnNext" disabled>Tiếp ⟶</button>
-      </div>
-      <div class="group">
-        <label class="pill">Tự chuyển <input type="checkbox" id="autoChk" checked></label>
-        <div id="durControl">
-          <button id="durMinus">-</button>
-          <input id="dur" type="number" min="1" value="5" aria-label="Số giây mỗi ảnh"> s
-          <button id="durPlus">+</button>
-        </div>
-        <button id="btnSaveLocal" disabled>💾 Lưu tại máy</button>
-        <button id="btnExportHtml" disabled>📤 Xuất HTML vĩnh viễn</button>
-        <a id="exportLink" download>⬇️ Tải file</a>
-      </div>
+  <header class="container">
+    <h1>30 NGÀY BYE BYE MỠ BỤNG</h1>
+    <button id="openGuide" class="btn">Hướng dẫn tập</button>
+    <div class="note">Bấm “Hướng dẫn tập” để xem 9 ảnh toàn màn hình theo thứ tự 1→9.</div>
+    <div class="config">
+      <label>Thời gian mỗi ảnh (giây):
+        <input id="seconds" type="number" min="1" value="3">
+      </label>
+      <button id="startAuto" class="btn secondary">Tự động chạy</button>
+      <button id="stopAuto" class="btn secondary">Tạm dừng</button>
     </div>
+  </header>
 
-    <!-- Danh sách huyệt phía trên ảnh -->
-    <div id="nameList" class="list"></div>
-
-    <div class="stage">
-      <img id="img" alt="Ảnh huyệt" />
-    </div>
-    <div class="bar"><span id="progress"></span></div>
-    <div id="err" class="error" role="alert"></div>
-    <div id="thumbs" class="thumbs"></div>
+  <!-- MODAL / LIGHTBOX -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="close" id="closeBtn" aria-label="Đóng">×</button>
+    <div class="counter"><span id="idx">1</span>/9</div>
+    <div class="progress"><div id="bar"></div></div>
+    <button class="nav prev" id="prevBtn" aria-label="Trước">‹</button>
+    <img id="viewer" src="1.png?v=20250909" alt="Hướng dẫn tập ảnh 1">
+    <button class="nav next" id="nextBtn" aria-label="Tiếp">›</button>
+    <button class="fullscreen" id="fsBtn" aria-label="Toàn màn hình">⛶</button>
   </div>
 
-  <!-- Fullscreen Guide Modal -->
-  <div id="guide" class="guide hidden" aria-hidden="true">
-    <div class="guide-inner">
-      <button id="guideClose" class="guide-close" aria-label="Đóng">✕</button>
-      <div class="guide-counter" id="guideCounter">1/9</div>
-      <img id="guideImg" alt="Hướng dẫn tập" />
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+  <script>
+    // DANH SÁCH 9 ẢNH — tên file đúng như bạn đã upload ở root
+    window.APP_IMAGES = [
+      "1.png?v=20250909","2.png?v=20250909","3.png?v=20250909",
+      "4.png?v=20250909","5.png?v=20250909","6.png?v=20250909",
+      "7.png?v=20250909","8.png?v=20250909","9.png?v=20250909"
+    ];
+  </script>
+  <script src="script.js?v=20250909" defer></script>
 </body>
 </html>
