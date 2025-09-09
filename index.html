@@ -4,37 +4,32 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>30 NGÀY BYE BYE MỠ BỤNG</title>
-  <!-- base để mọi đường dẫn là tương đối -->
-  <base href="./">
   <link rel="stylesheet" href="styles.css?v=20250909">
 </head>
 <body>
   <header class="container">
     <h1>30 NGÀY BYE BYE MỠ BỤNG</h1>
+
+    <!-- ẢNH HIỂN THỊ NGOÀI TRANG CHỦ -->
+    <div class="hero-img">
+      <img src="./map.png?v=20250909" alt="Sơ đồ 9 vị trí huyệt">
+    </div>
+
     <button id="openGuide" class="btn">Hướng dẫn tập</button>
     <div class="note">Bấm “Hướng dẫn tập” để xem 9 ảnh toàn màn hình theo thứ tự 1→9.</div>
-    <div class="config">
-      <label>Thời gian mỗi ảnh (giây):
-        <input id="seconds" type="number" min="1" value="3">
-      </label>
-      <button id="startAuto" class="btn secondary">Tự động chạy</button>
-      <button id="stopAuto" class="btn secondary">Tạm dừng</button>
-    </div>
   </header>
 
-  <!-- MODAL / LIGHTBOX -->
   <div id="lightbox" class="lightbox" aria-hidden="true">
-    <button class="close" id="closeBtn" aria-label="Đóng">×</button>
+    <button class="close" id="closeBtn">×</button>
     <div class="counter"><span id="idx">1</span>/9</div>
     <div class="progress"><div id="bar"></div></div>
-    <button class="nav prev" id="prevBtn" aria-label="Trước">‹</button>
+    <button class="nav prev" id="prevBtn">‹</button>
     <img id="viewer" src="1.png?v=20250909" alt="Hướng dẫn tập ảnh 1">
-    <button class="nav next" id="nextBtn" aria-label="Tiếp">›</button>
-    <button class="fullscreen" id="fsBtn" aria-label="Toàn màn hình">⛶</button>
+    <button class="nav next" id="nextBtn">›</button>
+    <button class="fullscreen" id="fsBtn">⛶</button>
   </div>
 
   <script>
-    // DANH SÁCH 9 ẢNH — tên file đúng như bạn đã upload ở root
     window.APP_IMAGES = [
       "1.png?v=20250909","2.png?v=20250909","3.png?v=20250909",
       "4.png?v=20250909","5.png?v=20250909","6.png?v=20250909",
