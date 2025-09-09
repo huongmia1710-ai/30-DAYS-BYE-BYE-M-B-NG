@@ -36,4 +36,10 @@ input[type=number]{width:80px;padding:8px;border:1px solid #eee;border-radius:10
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,.15);
 }
+/* Đảm bảo lightbox nổi trên mọi thứ */
+.lightbox{ z-index: 9999; }
+
+/* Tránh có phần tử che lên nút */
+.hero-img, .hero-img *{ position: relative; z-index: 1; }
+.container .btn{ position: relative; z-index: 2; }
 
