@@ -6,6 +6,25 @@
   <title>30 NGÀY BYE BYE MỠ BỤNG</title>
   <link rel="stylesheet" href="styles.css?v=20250909">
 </head>
+  <script>
+  // Bật/tắt lightbox
+  const lb  = document.getElementById('lightbox');
+  const btn = document.getElementById('openGuide');
+  const closeBtn = document.getElementById('closeBtn');
+
+  if (btn) {
+    btn.addEventListener('click', () => {
+      lb.classList.add('active');
+      lb.setAttribute('aria-hidden','false');
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      lb.classList.remove('active');
+      lb.setAttribute('aria-hidden','true');
+    });
+  }
+</script>
 <body>
   <header class="container">
     <h1>30 NGÀY BYE BYE MỠ BỤNG</h1>
